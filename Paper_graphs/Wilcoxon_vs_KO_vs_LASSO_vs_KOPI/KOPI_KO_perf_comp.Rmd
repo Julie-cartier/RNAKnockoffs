@@ -1,0 +1,117 @@
+---
+title: "KOPI_KO_performances_draft_paper"
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+source('/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/Settings.R')
+source('/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/Functions.R')
+```
+
+```{r}
+
+load("/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/R_files/KOPI_KO_linear_table_perfx10.R")
+
+```
+
+
+
+
+# KOPI vs KO
+
+
+```{r Boxplots and mean plots for the comparison}
+
+df_boxplot_KOPIKO = df_perf_maker_boxplot(table.perf.linear.KOPIKO, list_target_fdr = list_target_fdr, stats_names = c("KO ", "KOPI"), n.rep = 100, length_bin = 0.1)
+
+
+df_aggregated <- summarise(group_by(df_boxplot_KOPIKO, FDP_levels, KO), Count = n(), .groups = "drop")
+df_means <- summarise(group_by(df_boxplot_KOPIKO, FDP_levels, KO), Mean = mean(Power), .groups = "drop")
+
+count_plot <- ggplot(df_aggregated, aes(x = FDP_levels, y = Count, fill = KO, color = KO)) +
+  geom_bar(stat = "identity", position = position_dodge(0.8), width = 0.6, alpha = 0.8) +
+  ylim(0, 3900) +
+  geom_text(aes(label = Count), # label formatting
+            position = position_dodge(0.8), 
+            vjust = -0.5,  
+            size = 5.5,      
+            angle = 0,     
+            color = "black",
+            fontface = "bold") +
+  scale_fill_manual(values = c("#95b0b4","#17becf")) +
+  scale_color_manual(values = c("#95b0b4", "#17becf")) +
+  labs(
+    x = NULL,  
+    y = "Count",
+    fill = "Methods",
+    shape = "Methods", 
+    color = "Methods"   
+  ) +
+  theme(
+    axis.text.x = element_text(size = 20, face = "bold", angle = 45, hjust = 1),
+    axis.title.x = element_text(size = 22),
+    axis.title.y = element_text(size = 22, vjust = 2),
+    axis.text.y = element_text(size = 20, face = "bold"),
+    legend.position = c(0.96, 0.85),  # Show legend at the top for median plot
+    legend.title = element_blank(),
+    legend.text = element_text(size = 24),
+    legend.justification = c("right", "center"),
+    legend.spacing.x = unit(0.7, "cm"),
+    panel.background = element_rect(fill = "#F6F6F6"),
+    panel.grid.major = element_line(size = 0.5, linetype = 'solid', colour = "white"),
+    panel.grid.minor = element_line(size = 0.25, linetype = 'solid', colour = "white"),
+    plot.title = element_blank()
+  ) + guides(# legend formatting
+    color = guide_legend(ncol = 3),  
+    fill = guide_legend(ncol = 3),  
+    shape = guide_legend(ncol = 3)   
+  ) 
+
+# Mean plot
+
+mean_comp <- ggplot(df_aggregated, aes(x = FDP_levels, y = Power, size = Count, fill = KO, color = KO, shape = KO)) +
+  geom_point(data = df_means, aes(x = FDP_levels, y = Mean), size = 5, stroke = 1.9, position = position_dodge(width = 0.8)) +
+  scale_color_manual(values = c("#95b0b4", "#17becf")) +
+  scale_fill_manual(values = c("#95b0b4", "#17becf")) +
+  scale_shape_manual(values = c(3, 4, 8)) + 
+  ylim(-0.1, 1) +
+  labs(
+    x = "FDP",
+    y = "Power (mean)",
+    fill = "Methods",
+    shape = "Methods",  
+    color = "Methods"   
+  ) +
+  theme(
+    axis.text.x = element_text(size = 20, face = "bold", angle = 45, hjust = 1),
+    axis.title.x = element_text(size = 22),
+    axis.title.y = element_text(size = 22),
+    axis.text.y = element_text(size = 20, face = "bold"),
+    legend.position = c(0.45, 0.9), 
+    legend.title = element_blank(),
+    legend.text = element_text(size = 24),
+    legend.justification = c("right", "center"),
+    legend.spacing.x = unit(0.7, "cm"),
+    panel.background = element_rect(fill = "#F6F6F6"),
+    panel.grid.major = element_line(size = 0.5, linetype = 'solid', colour = "white"),
+    panel.grid.minor = element_line(size = 0.25, linetype = 'solid', colour = "white"),
+    plot.title = element_blank()
+  ) + guides( # legend formatting
+    color = guide_legend(ncol = 3),  
+    fill = guide_legend(ncol = 3),   
+    shape = guide_legend(ncol = 3)  
+  )
+
+# Combine the two plots 
+combined_plot <- count_plot / mean_comp +
+  plot_layout(axes = "collect", heights = c(1, 2))  
+
+combined_plot
+
+ggsave(file = "/home/julie/Documents/Paper_codes/Paper_graphs/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/Figures/SM_figure_11.png", height = 10, width = 16)
+```

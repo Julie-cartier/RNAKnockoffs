@@ -1,0 +1,164 @@
+---
+title: "Synthesis_cov_comp_ext"
+output: html_document
+---
+---
+title: "Synthesis_comparison"
+output: html_document
+---
+
+In this document, we compare the performance of gaussian methods with a simulated data matrix which covariance is known. Our goal is to study the impact of the estimation of the covariance matrix on the performance of the KO framework
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+source("/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Methods_comparison/Settings.R")
+source("/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Methods_comparison/Functions.R")
+
+```
+
+```{r}
+
+load("/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Methods_comparison/R_files/table_perf_extx10.R")
+
+```
+
+
+Comparison + impact of the estimation of the covariance on the performances
+
+
+
+```{r load results for all methods with and without the covariance structure}
+df_done_cov = df_perf_maker(table.perf.linear.cov, list_target_fdr, KO_meth_names = c("SDP", "SDP + S.sim ", "MVR", "MVR + S.sim ", "CI", "CI + S.sim ", "SDPR", "SDPR + S.sim "), n.rep = 10)
+
+df_power_fdp <- df_done_cov[[3]]
+```
+
+
+
+
+```{r Plots }
+
+# MVR results
+
+df_power_fdp_cov_MVR <- subset(df_power_fdp, KO %in% c("MVR", "MVR + S.sim "))
+
+graph_power_fdp_cov_MVR <- ggplot(df_power_fdp_cov_MVR, aes(x=fdp, y=power, color = KO)) + 
+   ylab("Power")+ 
+   xlab("FDP") + 
+   ylim(c(-0.25, 1.20)) + 
+   geom_point(aes(shape = KO), size = 3) +
+   scale_shape_manual(values = c(15, 18)) + 
+   geom_ribbon(aes(ymin = power - std,ymax = power + std, group = KO, fill = KO), alpha = 0.15, colour = NA) +
+   labs(title = "Power vs FDP, k = 10, X from X real") +
+   scale_color_manual(values=c("#8FAD86","#bcbd22", "#17becf", "blue"))  +
+   scale_fill_manual(values=c("#8FAD86","#bcbd22", "#17becf", "blue")) +
+   theme(axis.text.x = element_text(size = 16, face = "bold"),
+   axis.title.x = element_text(size = 18),
+   axis.title.y = element_text(size = 18),
+   axis.text.y = element_text(size = 16, face = "bold"),
+   plot.subtitle = element_text(size = 20, face = "bold"),
+   legend.title = element_blank(),
+   legend.text = element_text(size = 24),
+   legend.justification = c("right", "center"),
+   legend.position = c(.45, 0.4),
+   panel.background = element_rect(fill = "#F6F6F6"),
+                   panel.grid.major = element_line(size = 0.5, linetype = 'solid',
+                                colour = "white"), 
+                   panel.grid.minor = element_line(size = 0.25, linetype = 'solid',
+                                colour = "white"),
+  plot.title = element_blank()
+                   
+        )
+        
+graph_power_fdp_cov_MVR
+
+
+# SDP results
+
+df_power_fdp_cov_SDP <- subset(df_power_fdp, KO %in% c("SDP", "SDP + S.sim "))
+
+graph_power_fdp_cov_SDP <- ggplot(df_power_fdp_cov_SDP, aes(x=fdp, y=power, color = KO)) + 
+   ylab("Power")+ 
+   xlab("FDP") + 
+   ylim(c(-0.25, 1.20)) + 
+
+   geom_point(aes(shape = KO), size = 3) +
+   scale_shape_manual(values = c(17, 18)) +  
+   geom_ribbon(aes(ymin = power - std,ymax = power + std, group = KO, fill = KO), alpha = 0.15, colour = NA) +
+   scale_color_manual(values=c("#993300","#8b5800"))  +
+   scale_fill_manual(values=c("#993300","#8b5800")) +
+   theme(axis.text.x = element_text(size = 16, face = "bold"),
+   axis.title.x = element_text(size = 18),
+   axis.title.y = element_text(size = 18),
+   axis.text.y = element_text(size = 16, face = "bold"),
+   plot.subtitle = element_text(size = 20, face = "bold"),
+   legend.title = element_blank(),
+   legend.text = element_text(size = 24),
+   legend.justification = c("right", "center"),
+   legend.position = c(.45, 0.4),
+   panel.background = element_rect(fill = "#F6F6F6"),
+                   panel.grid.major = element_line(size = 0.5, linetype = 'solid',
+                                colour = "white"), 
+                   panel.grid.minor = element_line(size = 0.25, linetype = 'solid',
+                                colour = "white"),
+  plot.title = element_blank()
+                   
+        )
+        
+graph_power_fdp_cov_SDP
+
+
+# CI results
+
+df_power_fdp_cov_CI <- subset(df_power_fdp, KO %in% c("CI", "CI + S.sim "))
+
+graph_power_fdp_cov_CI <- ggplot(df_power_fdp_cov_CI, aes(x=fdp, y=power, color = KO)) + 
+   ylab("Power")+ 
+   xlab("FDP") + 
+   ylim(c(-0.25, 1.2)) + 
+   geom_point(aes(shape = KO), size = 3) +
+   scale_shape_manual(values = c(7, 18)) + 
+   geom_ribbon(aes(ymin = power - std,ymax = power + std, group = KO, fill = KO), alpha = 0.15, colour = NA) +
+   labs(title = "Power vs FDP, k = 10, X from X real") +
+   scale_color_manual(values=c("#6050dc","#494454"))  +
+   scale_fill_manual(values=c("#6050dc","#494454")) +
+   theme(axis.text.x = element_text(size = 16, face = "bold"),
+   axis.title.x = element_text(size = 18),
+   axis.title.y = element_text(size = 18),
+   axis.text.y = element_text(size = 16, face = "bold"),
+   plot.subtitle = element_text(size = 20, face = "bold"),
+   legend.title = element_blank(),
+   legend.text = element_text(size = 24),
+   legend.justification = c("right", "center"),
+   legend.position = c(.45, 0.4),
+   panel.background = element_rect(fill = "#F6F6F6"),
+                   panel.grid.major = element_line(size = 0.5, linetype = 'solid',
+                                colour = "white"), 
+                   panel.grid.minor = element_line(size = 0.25, linetype = 'solid',
+                                colour = "white"),
+  plot.title = element_blank()
+                   
+        )
+        
+graph_power_fdp_cov_CI
+
+
+```
+
+
+```{r Combined plots}
+graph_power_fdp_fdr_CI <-ggarrange(
+  graph_power_fdp_cov_MVR, graph_power_fdp_cov_SDP, graph_power_fdp_cov_CI,               
+  nrow = 3,
+  ncol = 1,
+  labels = c("(a) ", "(b) ", "(c) "),
+  font.label = list(size = 12)
+  )
+
+
+ggsave(file = "/home/julie/Documents/Paper_codes/Paper_graphs/Methods_comparison/Figures/SM_figure_4.png", height = 14, width = 12)
+```
+

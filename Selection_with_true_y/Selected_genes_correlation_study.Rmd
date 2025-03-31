@@ -1,0 +1,664 @@
+---
+title: "selected_genes_correlation_study"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r load data matrices}
+load("/home/julie/Documents/Paper_codes/Selection_with_true_y/R_files/BC_data.R")
+load("/home/julie/Documents/Paper_codes/Selection_with_true_y/R_files/AEGIS_data.R")
+load("//home/julie/Documents/Paper_codes/Selection_with_true_y/R_files/CRUKPAP_data.R")
+```
+
+```{r load selected}
+
+load("/home/julie/Documents/Paper_codes/Selection_with_true_y/R_files/AEGIS_selected_genes.R")
+load("/home/julie/Documents/Paper_codes/Selection_with_true_y/R_files/CRUKPAP_selected_genes.R")
+load("/home/julie/Documents/Paper_codes/Selection_with_true_y/R_files/BC_pgr_selected_genes.R")
+load("/home/julie/Documents/Paper_codes/Selection_with_true_y/R_files/BC_hR2_selected_genes.R")
+load("/home/julie/Documents/Paper_codes/Selection_with_true_y/R_files/BC_er_selected_genes.R")
+
+```
+
+```{r Packages}
+library(stringr)
+library(ggplot2)
+library(ggpubr)
+library(dendextend)
+library(reshape2)  
+library(scales)  
+```
+
+
+```{r Additional functions}
+custom_labels <- function(x) {ifelse(x %in% selected_genes, x, "")} # To show selected genes in heatmpas
+```
+
+# Breast cancer cohort 
+
+
+## Genes in the single gene classifier ###
+```{r Where are the genes used to built SGC in the correlation matrix}
+
+data.matrix = X_BC
+selected_genes = c("PGR", "ESR1", "ERBB2")
+
+# Compute correlation matrix and perform hierarchical clustering for better visualization
+cor_matrix <- abs(cor(X_BC))
+hc <- hclust(dist(1 - cor_matrix))  
+
+# re-order features 
+ordered_features <- colnames(cor_matrix)[hc$order]
+cor_matrix <- cor_matrix[ordered_features, ordered_features]
+
+# Melt correlation matrix to create heatmaps 
+df_Sigma <- melt(cor_matrix)
+colnames(df_Sigma) <- c("Feature1", "Feature2", "Correlation")
+
+# Identify studied genes location
+df_Sigma$Location <- ifelse(df_Sigma$Feature1 %in% selected_genes | df_Sigma$Feature2 %in% selected_genes,
+                             "yes", "no")
+
+
+# Heatmap 
+
+HM <- ggplot(df_Sigma, aes(x = Feature1, y = Feature2, fill = Correlation)) +
+  geom_tile() +  
+  geom_tile(data = subset(df_Sigma, Location == "yes"), color = "black", linewidth = 0.2) +  
+  scale_fill_gradient2(low = "#FFFFFF", mid = "#4D9DDA", high = "#081AD1", midpoint = 0.5) + 
+  theme_minimal() +  
+  labs(x = "Breast Cancer", y = "", fill = "Pearson Correlation") +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 10, face = "bold"),
+    axis.text.y = element_text(size = 10, face = "bold"),
+    axis.ticks = element_blank(),
+    panel.grid = element_blank(),
+    plot.title = element_blank(),
+    legend.position = "bottom",
+    legend.text = element_text(size = 8),
+    legend.title = element_text(size = 9, face = "bold")
+  ) +
+  guides(fill = guide_colorbar(barwidth = 8, barheight = 0.5)) +
+  scale_x_discrete(labels = custom_labels) + # labels for important genes
+  scale_y_discrete(labels = custom_labels)
+
+HM
+
+ggsave("/home/julie/Bureau/Methods/Knockoffs/New_cohorts/TrueY/Figures/SGCs_genes_BC_correlation.png", width = 6, height = 6)
+ggsave("/home/julie/Documents/Presentations/Figures_draft_paper/correlation_heatmaps/SGCs_genes_BC_correlation.png", width = 6, height = 6)
+
+
+```
+```{r Zoom : Where are the genes used to built SGC in the correlation matrix}
+
+data.matrix = X_BC
+selected_genes = c("PGR", "ESR1", "ERBB2")
+
+# Compute correlation matrix and perform hierarchical clustering for better visualization
+cor_matrix <- abs(cor(X_BC))
+hc <- hclust(dist(1 - cor_matrix))  
+
+# re-order features 
+ordered_features <- colnames(cor_matrix)[hc$order]
+cor_matrix <- cor_matrix[ordered_features[(which(ordered_features == "PGR")-10):(which(ordered_features == "ESR1")+10)], ordered_features[(which(ordered_features == "PGR")-10):(which(ordered_features == "ESR1")+10)]]
+
+# Melt correlation matrix to create heatmaps 
+df_Sigma <- melt(cor_matrix)
+colnames(df_Sigma) <- c("Feature1", "Feature2", "Correlation")
+
+
+
+
+# Identify studied genes location
+df_Sigma$Location <- ifelse(df_Sigma$Feature1 %in% selected_genes | df_Sigma$Feature2 %in% selected_genes,
+                             "yes", "no")
+
+
+# Heatmap 
+HM <- ggplot(df_Sigma, aes(x = Feature1, y = Feature2, fill = Correlation)) +
+  geom_tile() +  
+  geom_tile(data = subset(df_Sigma, Location == "yes"), color = "black", linewidth = 0.5) + 
+  scale_fill_gradient2(low = "#FFFFFF", mid = "#4D9DDA", high = "#081AD1", midpoint = 0.5) + 
+  theme_minimal() +  
+  labs(x = "Breast Cancer", y = "", fill = "Pearson Correlation") +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 10, face = "bold"),
+    axis.text.y = element_text(size = 10, face = "bold"),
+    axis.title.x = element_text(size = 14),
+    axis.ticks = element_blank(),
+    panel.grid = element_blank(),
+    plot.title = element_blank(),
+    legend.position = "bottom",
+    legend.text = element_text(size = 12),
+    legend.title = element_text(size = 13, face = "bold")
+  ) +
+  guides(fill = guide_colorbar(barwidth = 8, barheight = 0.8)) +
+  scale_x_discrete(labels = custom_labels) + # labels for important genes
+  scale_y_discrete(labels = custom_labels)
+
+HM
+
+ggsave("/home/julie/Bureau/Methods/Knockoffs/New_cohorts/TrueY/Figures/Zoom_SGCs_genes_BC_correlation.png", width = 6, height = 6)
+ggsave("/home/julie/Documents/Presentations/Figures_draft_paper/correlation_heatmaps/Zoom_SGCs_genes_BC_correlation.png", width = 6, height = 6)
+
+```
+
+HER2 study 
+
+```{r}
+her2_selected_genes_0.3 <- colnames(X_BC)[which(table.selected.genes.BC.hr2$`q = 0.3` != 0)]
+her2_selected_genes_0.5 <- colnames(X_BC)[which(table.selected.genes.BC.hr2$`q = 0.5` != 0)]
+```
+
+```{r Finding HER2 genes in the correlation heatmap for a target fdr level of  0.3}
+
+data.matrix = X_BC
+selected_genes = her2_selected_genes_0.3
+
+# Compute correlation matrix and perform hierarchical clustering for better visualization
+cor_matrix <- abs(cor(X_BC))
+hc <- hclust(dist(1 - cor_matrix))  
+
+# re-order features 
+ordered_features <- colnames(cor_matrix)[hc$order]
+cor_matrix <- cor_matrix[ordered_features, ordered_features]
+
+# Melt correlation matrix to create heatmaps 
+df_Sigma <- melt(cor_matrix)
+colnames(df_Sigma) <- c("Feature1", "Feature2", "Correlation")
+
+
+# For better readability (avoid overlapping feature names (set a posteriori))
+custom_labels_ <- custom_labels(ordered_features)
+custom_labels_ <- ifelse(custom_labels_ %in% c("GRB7"), "GRB7/STARD3", 
+                     ifelse(custom_labels_ %in% c("STARD3"), " ", custom_labels_))
+
+# Identify studied genes location
+df_Sigma$Location <- ifelse(df_Sigma$Feature1 %in% selected_genes | df_Sigma$Feature2 %in% selected_genes,
+                             "yes", "no")
+
+
+# Heatmap 
+HM <- ggplot(df_Sigma, aes(x = Feature1, y = Feature2, fill = Correlation)) +
+  geom_tile() +  
+  geom_tile(data = subset(df_Sigma, Location == "yes"), color = "black", linewidth = 0.2) +  # Black squares around selected genes
+  scale_fill_gradient2(low = "#FFFFFF", mid = "#4D9DDA", high = "#081AD1", midpoint = 0.5) + 
+  theme_minimal() +  
+  labs(x = "Breast Cancer", y = "", fill = "Pearson Correlation") +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 9, face = "bold"),
+    axis.text.y = element_text(size = 9, face = "bold"),
+    axis.title.x = element_text(size = 14),
+    axis.ticks = element_blank(),
+    panel.grid = element_blank(),
+    plot.title = element_blank(),
+    legend.position = "bottom",
+    legend.text = element_text(size = 12),
+    legend.title = element_text(size = 13, face = "bold")
+  ) +
+  guides(fill = guide_colorbar(barwidth = 8, barheight = 0.8)) +
+  scale_x_discrete(labels = custom_labels_) + # labels for important genes
+  scale_y_discrete(labels = custom_labels_)
+
+HM
+
+ggsave("/home/julie/Bureau/Methods/Knockoffs/New_cohorts/TrueY/Figures/HER2_0_3_genes_BC_correlation.png", width = 10, height = 10)
+
+
+```
+
+
+```{r Finding HER2 genes in the correlation heatmap for a target fdr level of  0.3, ZOOM}
+
+data.matrix = X_BC
+selected_genes = her2_selected_genes_0.3
+
+# Compute correlation matrix and perform hierarchical clustering for better visualization
+cor_matrix <- abs(cor(X_BC))
+hc <- hclust(dist(1 - cor_matrix))  
+
+# re-order features 
+ordered_features <- colnames(cor_matrix)[hc$order]
+cor_matrix <- cor_matrix[ordered_features[which(ordered_features == "ERBB2"):(which(ordered_features == "STARD3")+2)], ordered_features[which(ordered_features == "ERBB2"):(which(ordered_features == "STARD3")+2)]]
+
+# Melt correlation matrix to create heatmaps 
+df_Sigma <- melt(cor_matrix)
+colnames(df_Sigma) <- c("Feature1", "Feature2", "Correlation")
+
+
+
+
+# Identify studied genes location
+df_Sigma$Location <- ifelse(df_Sigma$Feature1 %in% selected_genes | df_Sigma$Feature2 %in% selected_genes,
+                             "yes", "no")
+
+
+# Heatmap 
+HM <- ggplot(df_Sigma, aes(x = Feature1, y = Feature2, fill = Correlation)) +
+  geom_tile() +  
+  geom_tile(data = subset(df_Sigma, Location == "yes"), color = "black", linewidth = 0.5) + 
+  scale_fill_gradient2(low = "#FFFFFF", mid = "#4D9DDA", high = "#081AD1", midpoint = 0.5) + 
+  theme_minimal() +  
+  labs(x = "Breast Cancer", y = "", fill = "Pearson Correlation") +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 10, face = "bold"),
+    axis.text.y = element_text(size = 10, face = "bold"),
+    axis.title.x = element_text(size = 14),
+    axis.ticks = element_blank(),
+    panel.grid = element_blank(),
+    plot.title = element_blank(),
+    legend.position = "bottom",
+    legend.text = element_text(size = 12),
+    legend.title = element_text(size = 13, face = "bold")
+  ) +
+  guides(fill = guide_colorbar(barwidth = 8, barheight = 0.8)) +
+  scale_x_discrete(labels = custom_labels) + # labels for important genes
+  scale_y_discrete(labels = custom_labels)
+
+HM
+
+
+ggsave("/home/julie/Bureau/Methods/Knockoffs/New_cohorts/TrueY/Figures/HER2_0_3_genes_BC_correlation_ZOOM.png", width = 10, height = 10)
+```
+
+
+
+```{r Finding HER2 genes in the correlation heatmap for a target fdr level of  0.5}
+
+data.matrix = X_BC
+selected_genes = her2_selected_genes_0.5
+
+# Compute correlation matrix and perform hierarchical clustering for better visualization
+cor_matrix <- abs(cor(X_BC))
+hc <- hclust(dist(1 - cor_matrix))  
+
+# re-order features 
+ordered_features <- colnames(cor_matrix)[hc$order]
+cor_matrix <- cor_matrix[ordered_features, ordered_features]
+
+# Melt correlation matrix to create heatmaps 
+df_Sigma <- melt(cor_matrix)
+colnames(df_Sigma) <- c("Feature1", "Feature2", "Correlation")
+
+
+# For better readability (avoid overlapping feature names (set a posteriori))
+custom_labels_ <- custom_labels(ordered_features)
+custom_labels_ <- ifelse(custom_labels_ %in% c("GRB7"), "GRB7/STARD3",
+                     ifelse(custom_labels_ %in% c("STARD3"), " ", custom_labels_))
+custom_labels_ <- ifelse(custom_labels_ %in% c("PSMD3"), "PSMD3/MIEN1",
+                     ifelse(custom_labels_ %in% c("MIEN1"), " ", custom_labels_))
+
+# Identify studied genes location
+df_Sigma$Location <- ifelse(df_Sigma$Feature1 %in% selected_genes | df_Sigma$Feature2 %in% selected_genes,
+                             "yes", "no")
+
+
+# Heatmap 
+HM <- ggplot(df_Sigma, aes(x = Feature1, y = Feature2, fill = Correlation)) +
+  geom_tile() +  
+  geom_tile(data = subset(df_Sigma, Location == "yes"), color = "black", linewidth = 0.2) +  
+  scale_fill_gradient2(low = "#FFFFFF", mid = "#4D9DDA", high = "#081AD1", midpoint = 0.5) + 
+  theme_minimal() +  
+  labs(x = "Breast Cancer", y = "", fill = "Pearson Correlation") +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 8, face = "bold"),
+    axis.text.y = element_text(size = 8, face = "bold"),
+    axis.title.x = element_text(size = 14),
+    axis.ticks = element_blank(),
+    panel.grid = element_blank(),
+    plot.title = element_blank(),
+    legend.position = "bottom",
+    legend.text = element_text(size = 12),
+    legend.title = element_text(size = 13, face = "bold")
+  ) +
+  guides(fill = guide_colorbar(barwidth = 8, barheight = 0.8)) +
+  scale_x_discrete(labels = custom_labels_) + # labels for important genes
+  scale_y_discrete(labels = custom_labels_)
+
+HM
+
+ggsave("/home/julie/Bureau/Methods/Knockoffs/New_cohorts/TrueY/Figures/HER2_0_5_genes_BC_correlation.png", width = 10, height = 10)
+
+
+```
+
+
+```{r Finding HER2 genes in the correlation heatmap for a target fdr level of  0.5, ZOOM}
+
+data.matrix = X_BC
+selected_genes = her2_selected_genes_0.5
+
+# Compute correlation matrix and perform hierarchical clustering for better visualization
+cor_matrix <- abs(cor(X_BC))
+hc <- hclust(dist(1 - cor_matrix))  
+
+# re-order features 
+ordered_features <- colnames(cor_matrix)[hc$order]
+cor_matrix <- cor_matrix[ordered_features[(which(ordered_features == "MIEN1")-2):(which(ordered_features == "SERHL2")+2)], ordered_features[(which(ordered_features == "MIEN1")-2):(which(ordered_features == "SERHL2")+2)]]
+
+# Melt correlation matrix to create heatmaps 
+df_Sigma <- melt(cor_matrix)
+colnames(df_Sigma) <- c("Feature1", "Feature2", "Correlation")
+
+
+
+
+# Identify studied genes location
+df_Sigma$Location <- ifelse(df_Sigma$Feature1 %in% selected_genes | df_Sigma$Feature2 %in% selected_genes,
+                             "yes", "no")
+
+
+# Heatmap 
+HM <- ggplot(df_Sigma, aes(x = Feature1, y = Feature2, fill = Correlation)) +
+  geom_tile() +  
+  geom_tile(data = subset(df_Sigma, Location == "yes"), color = "black", linewidth = 0.5) +  
+  scale_fill_gradient2(low = "#FFFFFF", mid = "#4D9DDA", high = "#081AD1", midpoint = 0.5) + 
+  theme_minimal() +  
+  labs(x = "Breast Cancer", y = "", fill = "Pearson Correlation") +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 10, face = "bold"),
+    axis.text.y = element_text(size = 10, face = "bold"),
+    axis.title.x = element_text(size = 14),
+    axis.ticks = element_blank(),
+    panel.grid = element_blank(),
+    plot.title = element_blank(),
+    legend.position = "bottom",
+    legend.text = element_text(size = 12),
+    legend.title = element_text(size = 13, face = "bold")
+  ) +
+  guides(fill = guide_colorbar(barwidth = 8, barheight = 0.8)) +
+  scale_x_discrete(labels = custom_labels) + # labels for important genes
+  scale_y_discrete(labels = custom_labels)
+
+HM
+
+
+ggsave("/home/julie/Bureau/Methods/Knockoffs/New_cohorts/TrueY/Figures/HER2_0_5_genes_BC_correlation_ZOOM.png", width = 10, height = 10)
+```
+
+```{r Correlation structure of the set of selected genes for HER2 biomarker}
+
+data.matrix = X_BC
+selected_genes = her2_selected_genes_0.5
+
+# Compute correlation matrix and perform hierarchical clustering for better visualization
+cor_matrix <- abs(cor(X_BC[, selected_genes]))
+hc <- hclust(dist(1 - cor_matrix))  
+
+# re-order features 
+ordered_features <- colnames(cor_matrix)[hc$order]
+cor_matrix <- cor_matrix[ordered_features, ordered_features]
+
+# Melt correlation matrix to create heatmaps 
+df_Sigma <- melt(cor_matrix)
+colnames(df_Sigma) <- c("Feature1", "Feature2", "Correlation")
+
+
+# Heatmap 
+HM <- ggplot(df_Sigma, aes(x = Feature1, y = Feature2, fill = Correlation)) +
+  geom_tile() +  
+  scale_fill_gradient2(low = "#FFFFFF", mid = "#4D9DDA", high = "#081AD1", midpoint = 0.5) + 
+  theme_minimal() +  
+  labs(x = "Breast Cancer", y = "", fill = "Pearson Correlation") +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 8, face = "bold"),
+    axis.text.y = element_text(size = 8, face = "bold"),
+    axis.title.x = element_text(size = 14),
+    axis.ticks = element_blank(),
+    panel.grid = element_blank(),
+    plot.title = element_blank(),
+    legend.position = "bottom",
+    legend.text = element_text(size = 12),
+    legend.title = element_text(size = 13, face = "bold")
+  ) +
+  guides(fill = guide_colorbar(barwidth = 8, barheight = 0.8)) +
+  scale_x_discrete(labels = ordered_features) + # labels for important genes
+  scale_y_discrete(labels = ordered_features)
+
+HM
+
+
+ggsave("/home/julie/Bureau/Methods/Knockoffs/New_cohorts/TrueY/Figures/HER2_slected_genes_correlation.png", width = 10, height = 10)
+
+
+```
+
+
+
+
+# CRUKPAP cohort
+
+
+
+```{r CRUKPAP selected genes}
+
+CRUKPAP_selected_genes_0.5 <- colnames(X_CRUKPAP)[which(table.selected.genes.CRUKPAP$`q = 0.5` != 0)]
+
+```
+
+```{r Finding CRUKPAP genes in the correlation heatmap for a target fdr level of  0.5}
+
+data.matrix = X_CRUKPAP
+selected_genes = CRUKPAP_selected_genes_0.5
+
+# Compute correlation matrix and perform hierarchical clustering for better visualization
+cor_matrix <- abs(cor(X_CRUKPAP))
+hc <- hclust(dist(1 - cor_matrix))  
+
+# re-order features 
+ordered_features <- colnames(cor_matrix)[hc$order]
+cor_matrix <- cor_matrix[ordered_features, ordered_features]
+
+# Melt correlation matrix to create heatmaps 
+df_Sigma <- melt(cor_matrix)
+colnames(df_Sigma) <- c("Feature1", "Feature2", "Correlation")
+
+
+# Identify studied genes location
+df_Sigma$Location <- ifelse(df_Sigma$Feature1 %in% selected_genes | df_Sigma$Feature2 %in% selected_genes,
+                             "yes", "no")
+
+
+# Heatmap 
+HM <- ggplot(df_Sigma, aes(x = Feature1, y = Feature2, fill = Correlation)) +
+  geom_tile() +  
+  geom_tile(data = subset(df_Sigma, Location == "yes"), color = "black", linewidth = 0.2) +  
+  scale_fill_gradient2(low = "#FFFFFF", mid = "#4D9DDA", high = "#081AD1", midpoint = 0.5) + 
+  theme_minimal() +  
+  labs(x = "CRUKPAP", y = "", fill = "Pearson Correlation") +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 8, face = "bold"),
+    axis.text.y = element_text(size = 8, face = "bold"),
+    axis.title.x = element_text(size = 14),
+    axis.ticks = element_blank(),
+    panel.grid = element_blank(),
+    plot.title = element_blank(),
+    legend.position = "bottom",
+    legend.text = element_text(size = 12),
+    legend.title = element_text(size = 13, face = "bold")
+  ) +
+  guides(fill = guide_colorbar(barwidth = 8, barheight = 0.8)) +
+  scale_x_discrete(labels = custom_labels) + # labels for important genes
+  scale_y_discrete(labels = custom_labels)
+
+HM
+
+ggsave("/home/julie/Bureau/Methods/Knockoffs/New_cohorts/TrueY/Figures/CRUKPAP_0_5_genes_correlation.png", width = 10, height = 10)
+
+
+```
+
+
+
+```{r Correlation structure of the set of selected genes for CRUKPAP}
+
+data.matrix = X_CRUKPAP
+selected_genes = CRUKPAP_selected_genes_0.5
+
+
+# Compute correlation matrix and perform hierarchical clustering for better visualization
+cor_matrix <- abs(cor(X_CRUKPAP[, selected_genes]))
+hc <- hclust(dist(1 - cor_matrix))  
+
+# re-order features 
+ordered_features <- colnames(cor_matrix)[hc$order]
+cor_matrix <- cor_matrix[ordered_features, ordered_features]
+
+# Melt correlation matrix to create heatmaps 
+df_Sigma <- melt(cor_matrix)
+colnames(df_Sigma) <- c("Feature1", "Feature2", "Correlation")
+
+
+# Heatmap 
+HM <- ggplot(df_Sigma, aes(x = Feature1, y = Feature2, fill = Correlation)) +
+  geom_tile() +  
+  scale_fill_gradient2(low = "#FFFFFF", mid = "#4D9DDA", high = "#081AD1", midpoint = 0.5) + 
+  theme_minimal() +  
+  labs(x = "CRUKPAP", y = "", fill = "Pearson Correlation") +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 8, face = "bold"),
+    axis.text.y = element_text(size = 8, face = "bold"),
+    axis.title.x = element_text(size = 14),
+    axis.ticks = element_blank(),
+    panel.grid = element_blank(),
+    plot.title = element_blank(),
+    legend.position = "bottom",
+    legend.text = element_text(size = 12),
+    legend.title = element_text(size = 13, face = "bold")
+  ) +
+  guides(fill = guide_colorbar(barwidth = 8, barheight = 0.8)) +
+  scale_x_discrete(labels = ordered_features) + # labels for important genes
+  scale_y_discrete(labels = ordered_features)
+
+HM
+
+
+ggsave("/home/julie/Bureau/Methods/Knockoffs/New_cohorts/TrueY/Figures/CRUKPAP_selected_genes_correlation.png", width = 10, height = 10)
+ggsave("/home/julie/Bureau/test.png", width = 10, height = 10)
+
+```
+
+# AEGIS cohort
+
+
+
+```{r CRUKPAP selected genes}
+
+AEGIS_selected_genes_0.5 <- colnames(X_AEGIS)[which(table.selected.genes.AEGIS$`q = 0.5` != 0)]
+colnames(X_AEGIS) <- paste0("p_", colnames(X_AEGIS))
+
+```
+
+```{r Finding AEGIS genes in the correlation heatmap for a target fdr level of  0.5}
+
+data.matrix = X_AEGIS
+selected_genes <- paste0("p_", AEGIS_selected_genes_0.5)
+
+# Compute correlation matrix and perform hierarchical clustering for better visualization
+cor_matrix <- abs(cor(X_AEGIS))
+hc <- hclust(dist(1 - cor_matrix))  
+
+# re-order features 
+ordered_features <- colnames(cor_matrix)[hc$order]
+cor_matrix <- cor_matrix[ordered_features, ordered_features]
+
+# Melt correlation matrix to create heatmaps 
+df_Sigma <- melt(cor_matrix)
+colnames(df_Sigma) <- c("Feature1", "Feature2", "Correlation")
+
+
+# For better readability (avoid overlapping feature names (set a posteriori))
+custom_labels_ <- custom_labels(ordered_features)
+custom_labels_ <- ifelse(custom_labels_ %in% c("p_7893862"), "p_7893862/p_7985317",
+                     ifelse(custom_labels_ %in% c("p_7985317"), " ", custom_labels_))
+custom_labels_ <- ifelse(custom_labels_ %in% c("p_7988132"), "p_7988132/p_8006504/p_8156058",
+                     ifelse(custom_labels_ %in% c("p_8006504", "p_8156058"), " ", custom_labels_))
+
+# Identify studied genes location
+df_Sigma$Location <- ifelse(df_Sigma$Feature1 %in% selected_genes | df_Sigma$Feature2 %in% selected_genes,
+                             "yes", "no")
+
+
+# Heatmap 
+HM <- ggplot(df_Sigma, aes(x = Feature1, y = Feature2, fill = Correlation)) +
+  geom_tile() +  
+  geom_tile(data = subset(df_Sigma, Location == "yes"), color = "black", linewidth = 0.2) +  
+  scale_fill_gradient2(low = "#FFFFFF", mid = "#4D9DDA", high = "#081AD1", midpoint = 0.5) + 
+  theme_minimal() +  
+  labs(x = "AEGIS", y = "", fill = "Pearson Correlation") +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 8, face = "bold"),
+    axis.text.y = element_text(size = 8, face = "bold"),
+    axis.title.x = element_text(size = 14),
+    axis.ticks = element_blank(),
+    panel.grid = element_blank(),
+    plot.title = element_blank(),
+    legend.position = "bottom",
+    legend.text = element_text(size = 12),
+    legend.title = element_text(size = 13, face = "bold")
+  ) +
+  guides(fill = guide_colorbar(barwidth = 8, barheight = 0.8)) +
+  scale_x_discrete(labels = custom_labels_) + # labels for important genes
+  scale_y_discrete(labels = custom_labels_)
+
+HM
+
+ggsave("/home/julie/Bureau/Methods/Knockoffs/New_cohorts/TrueY/Figures/AEGIS_0_5_genes_correlation.png", width = 10, height = 10)
+#ggsave("/home/julie/Bureau/test.png", width = 10, height = 10)
+
+```
+
+
+
+
+```{r Correlation structure of the set of selected genes for AEGIS}
+
+data.matrix = X_AEGIS
+selected_genes <- paste0("p_", AEGIS_selected_genes_0.5)
+
+
+
+# Compute correlation matrix and perform hierarchical clustering for better visualization
+cor_matrix <- abs(cor(X_AEGIS[, selected_genes]))
+hc <- hclust(dist(1 - cor_matrix))  
+
+# re-order features 
+ordered_features <- colnames(cor_matrix)[hc$order]
+cor_matrix <- cor_matrix[ordered_features, ordered_features]
+
+# Melt correlation matrix to create heatmaps 
+df_Sigma <- melt(cor_matrix)
+colnames(df_Sigma) <- c("Feature1", "Feature2", "Correlation")
+
+
+# Heatmap 
+HM <- ggplot(df_Sigma, aes(x = Feature1, y = Feature2, fill = Correlation)) +
+  geom_tile() +  
+  scale_fill_gradient2(low = "#FFFFFF", mid = "#4D9DDA", high = "#081AD1", midpoint = 0.5) + 
+  theme_minimal() +  
+  labs(x = "AEGIS", y = "", fill = "Pearson Correlation") +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 8, face = "bold"),
+    axis.text.y = element_text(size = 8, face = "bold"),
+    axis.title.x = element_text(size = 14),
+    axis.ticks = element_blank(),
+    panel.grid = element_blank(),
+    plot.title = element_blank(),
+    legend.position = "bottom",
+    legend.text = element_text(size = 12),
+    legend.title = element_text(size = 13, face = "bold")
+  ) +
+  guides(fill = guide_colorbar(barwidth = 8, barheight = 0.8)) +
+  scale_x_discrete(labels = ordered_features) + # labels for important genes
+  scale_y_discrete(labels = ordered_features)
+
+HM
+
+
+ggsave("/home/julie/Bureau/Methods/Knockoffs/New_cohorts/TrueY/Figures/AEGIS_selected_genes_correlation.png", width = 10, height = 10)
+ggsave("/home/julie/Bureau/test.png", width = 10, height = 10)
+
+```

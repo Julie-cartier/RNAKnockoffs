@@ -1,0 +1,402 @@
+---
+title: "Correlation_study"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+# get data matrices
+source("/home/julie/Documents/Paper_codes/New_cohorts_EXPERIMENTS/AEGIS/Settings.R")  # get X_AEGIS_exp and X_CRUKPAP
+load("/home/julie/Documents/Paper_codes/Data/BC/X_BC_exp.R") # get X_BC_exp
+source("/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Statistics_comparison/Functions.R") # for graphical functions
+```
+
+```{r Additional functions}
+
+# Classify the results of variable selection into three categories based on power for each y
+
+indices_maker <- function(df, FDP_min, FDP_max){
+  easy_ind <- c()
+  medium_ind <- c()
+  hard_ind <- c()
+  NA_ind <- c()
+  mean_power_sample <- c()
+  block_size = length(list_target_fdr)
+  
+  for (i in 1:100){
+    table.perf.rep <- df[c(1,2), (block_size * (i - 1) + 1):(block_size * i)]
+    mean_power <- mean(as.matrix(table.perf.rep[2, which(table.perf.rep[1,]>=FDP_min & table.perf.rep[1,]<=FDP_max)]))
+    mean_power_sample <- c(mean_power_sample, mean_power)
+    if (is.na(mean_power)){
+      NA_ind <- c(NA_ind, i)
+    }
+    else if (mean_power>=0.70){
+      easy_ind <- c(easy_ind,i)
+    }
+    else if (mean_power<=0.25){
+      hard_ind <- c(hard_ind, i)
+    }
+    else{medium_ind <- c(medium_ind,i)}
+  }
+  return(list(list(easy_ind, medium_ind, hard_ind, NA_ind), mean_power_sample))
+}
+```
+
+```{r Classification with real data}
+# We classify the results obtained in the statistical comparison experiments for the three cohorts. The classification is made according to power criteria, given an interval of FDP.
+# We select only results for the combination of LSCIP + LCD
+
+df_power_mean_0_0.3 <- data.frame(matrix(nrow = 3, ncol = 4))
+colnames(df_power_mean_0_0.3) <- c("easy", "medium", "hard", "NA")
+rownames(df_power_mean_0_0.3) <- c("CRUKPAP", "AEGIS", "BC")
+
+# CRUKPAP
+
+load("/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Statistics_comparison/R_files/compStat_trueX_fakeY_tables_perf.R")
+
+df_LSCIP_CRUKPAP <- table.perf.linear.comp[ ,grep("LCD", names(table.perf.linear.comp))]
+df_power_mean_0_0.3[1, ] <- sapply(indices_maker(df_LSCIP_CRUKPAP, 0, 0.3)[[1]], length)
+
+# Breast Cancer
+
+load("/home/julie/Documents/Paper_codes/New_cohorts_EXPERIMENTS/BC/R_files/table_perf_statistic_comparaison_3e_cohorte.R")
+
+df_LSCIP_BC <- table.perf.linear.comp[ ,grep("LCD", names(table.perf.linear.comp))]
+df_power_mean_0_0.3[3, ] <- sapply(indices_maker(df_LSCIP_BC, 0, 0.3)[[1]], length)
+
+# AEGIS
+
+load("/home/julie/Documents/Paper_codes/New_cohorts_EXPERIMENTS/AEGIS/R_files/table_perf_statistic_comparaison_2e_cohorte.R")
+
+df_LSCIP_AEGIS <- table.perf.linear.comp[ ,grep("LCD", names(table.perf.linear.comp))]
+df_power_mean_0_0.3[2, ] <- sapply(indices_maker(df_LSCIP_AEGIS, 0, 0.3)[[1]], length)
+
+```
+
+# Generate Graphical illustration of difference in power variability between CRUKPAP and BC data.
+
+```{r}
+block_size = length(list_target_fdr)
+
+mean_power_CRUKPAP <- indices_maker(df_LSCIP_CRUKPAP, 0, 0.8)[[2]]
+mean_power_BC <- indices_maker(df_LSCIP_BC, 0, 0.8)[[2]]
+
+# get the 10 cases (over the 100 iterations) with the highest mean power for an FDP intervals set to [0, 0.8]
+
+easy_ind_CRUKPAP <- order(mean_power_CRUKPAP, decreasing = TRUE)[1:10] 
+easy_ind_BC <- order(mean_power_BC, decreasing = TRUE)[1:10]
+
+# get the 10 cases (over the 100 iterations) with the lowest mean power for an FDP intervals set to [0, 0.8]
+
+hard_ind_CRUKPAP <- order(mean_power_CRUKPAP, decreasing = FALSE)[1:10]
+hard_ind_BC <- order(mean_power_BC, decreasing = FALSE)[1:10]
+
+
+# Create new tables for ggplot
+
+cols_to_select_hard <- unlist(lapply(hard_ind_CRUKPAP, function(i) ((block_size * (i - 1) + 1):(block_size * i))))
+cols_to_select_easy <- unlist(lapply(easy_ind_CRUKPAP, function(i) ((block_size * (i - 1) + 1):(block_size * i))))
+
+df_LSCIP_CRUKPAP_hard <- df_LSCIP_CRUKPAP[, cols_to_select_hard]
+df_done_LSCIP_CRUKPAP_hard <- df_perf_maker(df_LSCIP_CRUKPAP_hard, list_target_fdr, stats_names = c("CRUKPAP (hard)"), n.rep = length(hard_ind_CRUKPAP))
+
+df_LSCIP_CRUKPAP_easy <- df_LSCIP_CRUKPAP[, cols_to_select_easy]
+df_done_LSCIP_CRUKPAP_easy <- df_perf_maker(df_LSCIP_CRUKPAP_easy, list_target_fdr, stats_names = c("CRUKPAP (easy)"), n.rep = length(easy_ind_CRUKPAP))
+
+
+cols_to_select_hard <- unlist(lapply(hard_ind_BC, function(i) ((block_size * (i - 1) + 1):(block_size * i))))
+cols_to_select_easy <- unlist(lapply(easy_ind_BC, function(i) ((block_size * (i - 1) + 1):(block_size * i))))
+
+df_LSCIP_BC_hard <- df_LSCIP_BC[, cols_to_select_hard]
+df_done_LSCIP_BC_hard <- df_perf_maker(df_LSCIP_BC_hard, list_target_fdr, stats_names = c("BC (hard)"), n.rep = length(hard_ind_BC))
+
+df_LSCIP_BC_easy <- df_LSCIP_BC[, cols_to_select_easy]
+df_done_LSCIP_BC_easy <- df_perf_maker(df_LSCIP_BC_easy, list_target_fdr, stats_names = c("BC (easy)"), n.rep = length(easy_ind_BC))
+
+
+df_power_fdr <- rbind(df_done_LSCIP_CRUKPAP_hard[[1]], df_done_LSCIP_CRUKPAP_easy[[1]], df_done_LSCIP_BC_hard[[1]], df_done_LSCIP_BC_easy[[1]])
+df_fdp_fdr <- rbind(df_done_LSCIP_CRUKPAP_hard[[2]], df_done_LSCIP_CRUKPAP_easy[[2]], df_done_LSCIP_BC_hard[[2]], df_done_LSCIP_BC_easy[[2]])
+df_power_fdp <- rbind(df_done_LSCIP_CRUKPAP_hard[[3]], df_done_LSCIP_CRUKPAP_easy[[3]], df_done_LSCIP_BC_hard[[3]], df_done_LSCIP_BC_easy[[3]])
+
+select_rows_CRUKPAP <- grep("CRUKPAP", df_power_fdr$KO)
+df_power_fdr[select_rows_CRUKPAP, 5] <- rep("CRUKPAP", length(select_rows_CRUKPAP))
+
+select_rows_CRUKPAP <- grep("BC", df_power_fdr$KO)
+df_power_fdr[select_rows_CRUKPAP, 5] <- rep("BC", length(select_rows_CRUKPAP))
+
+select_rows_CRUKPAP <- grep("easy", df_power_fdr$KO)
+df_power_fdr[select_rows_CRUKPAP, 6] <- rep("Easy ", length(select_rows_CRUKPAP))
+
+select_rows_CRUKPAP <- grep("hard", df_power_fdr$KO)
+df_power_fdr[select_rows_CRUKPAP, 6] <- rep("Hard ", length(select_rows_CRUKPAP))
+
+colnames(df_power_fdr)[c(5,6)] <- c("Cohort", "Difficulty")
+
+select_rows_CRUKPAP <- grep("CRUKPAP", df_power_fdr$KO)
+df_fdp_fdr[select_rows_CRUKPAP, 5] <- rep("CRUKPAP", length(select_rows_CRUKPAP))
+select_rows_CRUKPAP <- grep("BC", df_fdp_fdr$KO)
+df_fdp_fdr[select_rows_CRUKPAP, 5] <- rep("BC", length(select_rows_CRUKPAP))
+
+select_rows_CRUKPAP <- grep("easy", df_fdp_fdr$KO)
+df_fdp_fdr[select_rows_CRUKPAP, 6] <- rep("Easy ", length(select_rows_CRUKPAP))
+select_rows_CRUKPAP <- grep("hard", df_fdp_fdr$KO)
+df_fdp_fdr[select_rows_CRUKPAP, 6] <- rep("Hard ", length(select_rows_CRUKPAP))
+
+colnames(df_fdp_fdr)[c(5,6)] <- c("Cohort", "Difficulty")
+
+
+graph_power_fdr <- ggplot(df_power_fdr, aes(x = target_fdr, y = power, color = Cohort)) + 
+  ylab("Power")+ 
+  ylim(c(-0.25, 1.22)) +    
+  xlab("Target FDR (q)") + 
+  geom_ribbon(aes(ymin = power - std,ymax = power + std, group = KO, fill = Cohort), alpha = 0.15, colour = NA) + 
+  #geom_point(size = 3, shape = 3)+ 
+  geom_line(aes(group = KO, linetype = Difficulty), linewidth = 1.5)+
+  scale_color_manual(values=c("#00c8f4","#c34a36"), name = "Cohorts:")  +
+  scale_fill_manual(values=c("#00c8f4","#c34a36"), name = "Cohorts:") +
+  scale_linetype_manual(values=c("twodash", "solid"), name = "") +
+  theme(axis.text.x = element_text(size = 16, face = "bold"),
+  axis.title.x = element_text(size = 18),
+  axis.title.y = element_text(size = 18),
+  axis.text.y = element_text(size = 16, face = "bold"),
+  plot.subtitle = element_text(size = 20, face = "bold"),
+  legend.title = element_text(size = 18),
+  legend.text = element_text(size = 18),
+  legend.justification = c("right", "center"),
+  legend.position = "top",
+  legend.key.width = unit(1.5,"cm"),
+  legend.box = "horizontal", 
+  panel.background = element_rect(fill = "#F6F6F6"),
+                   panel.grid.major = element_line(linewidth = 0.5, linetype = 'solid',
+                                colour = "white"), 
+                   panel.grid.minor = element_line(linewidth = 0.25, linetype = 'solid',
+                                colour = "white"),
+  plot.title = element_blank()
+                   
+        ) +  guides(linetype = guide_legend(override.aes = list(linewidth = 0.9)), linetype = guide_legend(order = 1))
+graph_power_fdr
+
+ggsave(file = "/home/julie/Documents/Paper_codes/Paper_graphs/Correlation/Figures/Figure_5.png", height = 7, width = 14)  # saved for illustration purpose
+
+graph_fdp_fdr <- ggplot(df_fdp_fdr, aes(x = target_fdr, y = fdp, color = Cohort)) + 
+   ylab("FDP")+ 
+   xlab("Target FDR (q)") + 
+   ylim(c(-0.25, 1.22)) + 
+   geom_ribbon(aes(ymin = fdp - std,ymax = fdp + std, group = KO, fill = Cohort), alpha = 0.15, colour = NA) + 
+   geom_line(aes(group = KO, linetype = Difficulty), linewidth = 1.5)+
+   geom_abline(intercept = 0, slope = 1, color="black", linetype="dashed", linewidth = 1)+
+   scale_color_manual(values=c("#00c8f4","#c34a36"), name = "Cohorts:")  +
+   scale_fill_manual(values=c("#00c8f4","#c34a36"), name = "Cohorts:") +
+   scale_linetype_manual(values=c("twodash", "solid"), name = "") +
+   theme(axis.text.x = element_text(size = 16, face = "bold"),
+   axis.title.x = element_text(size = 18),
+   axis.title.y = element_text(size = 18),
+   axis.text.y = element_text(size = 16, face = "bold"),
+   legend.title = element_text(size = 18),
+   legend.text = element_text(size = 18),
+   legend.justification = c("right", "center"),
+   legend.position = c(.3, 0.8),
+   legend.key.width = unit(1.5,"cm"),
+   legend.box = "horizontal", 
+   plot.subtitle = element_text(size = 18, face = "bold"),
+   panel.background = element_rect(fill = "#F6F6F6"),
+                   panel.grid.major = element_line(linewidth = 0.5, linetype = 'solid',
+                                colour = "white"), 
+                   panel.grid.minor = element_line(linewidth = 0.25, linetype = 'solid',
+                                colour = "white"),
+   plot.title = element_blank() 
+        ) +  guides(linetype = guide_legend(override.aes = list(linewidth = 0.9)), linetype = guide_legend(order = 1))
+
+graph_fdp_fdr
+
+
+# Power FDP
+
+graph_power_fdp <- ggplot(df_power_fdp, aes(x=fdp, y=power, color = KO)) + 
+   ylab("Power")+ 
+   xlab("FDP") + 
+   ylim(c(-0.25, 1.22)) + 
+   #ylim(c(-0.15, 1.20)) + 
+   # geom_pointrange( aes(ymin = power-std, ymax = power+std),linewidth = 1)+
+   geom_point(aes(shape = KO, fill = KO, color = KO), size = 3) +
+   scale_shape_manual(values = c(22,23,25, 24)) +  # Adjust the shape values according to your preference
+   geom_ribbon(aes(ymin = power - std, ymax = power + std, group = KO, fill = KO), alpha = 0.15, colour = NA) +
+   geom_line(data = subset(df_power_fdp, KO == 'LASSO'), aes(group = KO))+
+   #geom_line(aes(group = KO), linewidth = 1.5)+
+   labs(title = "Power vs FDP, k = 10, X from X real") +
+   scale_color_manual(values=c("#00c8f4", "#00c8f4","#c34a36", "#c34a36"))  +
+   scale_fill_manual(values=c("#00c8f4", "#00c8f4","#c34a36", "#c34a36")) +
+   theme(axis.text.x = element_text(size = 16, face = "bold"),
+   axis.title.x = element_text(size = 18),
+   axis.title.y = element_text(size = 18),
+   axis.text.y = element_text(size = 16, face = "bold"),
+   legend.title = element_blank(),
+   legend.text = element_text(size = 18),
+   legend.justification = c("right", "center"),
+   legend.position = c(.96, 0.2),
+   #legend.key = element_rect(fill = "lightblue", color = NA),
+  # Modifier la taille et la largeur des signes de la légende
+    #legend.key.size = unit(1.5, "cm"),
+    #legend.key.width = unit(1.5,"cm"),
+  panel.background = element_rect(fill = "#F6F6F6"),
+                   panel.grid.major = element_line(linewidth = 0.5, linetype = 'solid',
+                                colour = "white"), 
+                   panel.grid.minor = element_line(linewidth = 0.25, linetype = 'solid',
+                                colour = "white"),
+   plot.title = element_blank()
+        )
+        
+graph_power_fdp
+
+
+
+
+
+```
+
+
+```{r Combined power vs FDP plot and FDP vs FDR plot}
+library(ggpubr)
+
+legend_power_fdr <- get_legend(graph_power_fdr)
+graph_power_fdp_fdr <- ggarrange(graph_power_fdp, graph_fdp_fdr, nrow = 2, ncol = 1,labels = c("(a)","(b)"), font.label = list(size = 12)) 
+
+
+
+ggsave(file = "/home/julie/Documents/Paper_codes/Paper_graphs/Correlation/Figures/SM_figures_XX.png", height = 10, width = 15)
+
+```
+
+# Generate plot to illustrate the link between features correlation and power
+# For each of the 100 iterations, compute the average power obtained over an FDP interval set to [0,0.3] (and [0,0.5]) against the average pairwise mean correlation between the 10 non-null features.  
+
+```{r Additional function}
+
+power_cor_maker <- function(df, FDP_min, FDP_max, X_sample, list_beta, block_size){ 
+
+  # df: saved data frame with experiments performance
+  # FDP_min: Lower bound of the FDP interval
+  # FDP_min: Upper bound of the FDP interval
+  # X_sample: data matrix
+  # list_beta: list of beta vectors used in the simulations 
+  # block_size: size of the target FDR sequence
+  
+  df_power_cor_sample <- data.frame(matrix(nrow = 100, ncol = 3))
+  colnames(df_power_cor_sample) <- c("mean.cor", "median.cor","mean.power")
+  
+  
+  X_sample_scaled <- scale(X_sample)
+  block_size <- length(list_target_fdr)
+  
+  for (i in 1:100){
+    
+    table.perf.rep <- df[c(1,2), (block_size * (i - 1) + 1):(block_size * i)]
+    mean_power <- mean(as.matrix(table.perf.rep[2, which(table.perf.rep[1,]>=FDP_min & table.perf.rep[1,]<=FDP_max)]))
+
+    cor.mat <- cor(X_sample_scaled[, which(list_beta[[i]] != 0)])
+    cor.mean <- mean(abs(cor.mat[lower.tri(cor.mat)]))
+    cor.median <- median(abs(cor.mat[lower.tri(cor.mat)]))
+    
+    df_power_cor_sample[i,] <- c(cor.mean, cor.median, mean_power)
+
+  }
+  return(df_power_cor_sample)
+}
+```
+
+```{r plot + Regression model}
+
+load("/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Statistics_comparison/R_files/compStat_trueX_fakeY_tables_perf.R")
+
+df_LSCIP_CRUKPAP <- table.perf.linear.comp[ ,grep("LCD", names(table.perf.linear.comp))]
+
+# create data frame for the plot
+
+df_power_cor_0_0.3 <- power_cor_maker(df_LSCIP_CRUKPAP, 0, 0.3, X_CRUKPAP, list.beta, length(list_target_fdr))
+df_power_cor_0_0.5 <- power_cor_maker(df_LSCIP_CRUKPAP, 0, 0.5, X_CRUKPAP, list.beta, length(list_target_fdr))
+
+
+df_power_cor <- rbind(df_power_cor_0_0.3, df_power_cor_0_0.5)
+df_power_cor <- data.frame(df_power_cor, FDP = rep(c("[0, 0.3]", "[0, 0.5]"), each = 100))
+
+# Adjust to the point cloud a linear model 
+
+fit_1 <- lm(mean.power~mean.cor, df_power_cor_0_0.3)
+confint_1 <- confint(fit_1, level = 0.95)
+fit_1.summ <- summary(fit_1)
+r.squared_1 <-fit_1.summ$r.squared
+p_values_1 <- fit_1.summ$coefficients[2,4]
+
+fit_2 <- lm(mean.power~mean.cor, df_power_cor_0_0.5)
+confint_2 <- confint(fit_2, level = 0.95)
+fit_2.summ <- summary(fit_2)
+r.squared_2 <-fit_2.summ$r.squared
+p_values_2 <- fit_2.summ$coefficients[2,4]
+
+slope_data <- summarize(group_by(df_power_cor, FDP), slope = coef(lm(mean.power ~ mean.cor))[2], mean_x = mean(mean.cor), mean_y = mean(mean.power))
+slope_data <- data.frame(slope_data, I_inf = c(confint_1[2,1], confint_2[2,1]), I_sup = c(confint_1[2,2], confint_2[2,2]), r.squared = c(r.squared_1, r.squared_2), p.value = c(p_values_1, p_values_2)) 
+
+
+
+graph_power_cor <- ggplot(df_power_cor, aes(x = mean.cor, y = mean.power, color = FDP, linetype = FDP)) + 
+  ylab("Power (mean)") + 
+  xlab("Features Pairwise Correlations (mean)") + 
+  #xlim(c(0,1)) +
+  geom_smooth(method = "lm", formula = y ~ x, aes(group = FDP, color = FDP), se = FALSE, linewidth = 1) +
+  geom_point(aes(shape = FDP, fill = FDP, color = FDP), size = 3, alpha = 0.5) +
+  scale_shape_manual(values = c(22, 23, 25, 24)) + 
+  scale_linetype_manual(values = c("twodash", "solid", "longdash")) +
+  scale_color_manual(values = c("#875580", "#E6D030", "#875580", "#c34a36")) +
+  scale_fill_manual(values = c("#875580", "#E6D030", "#875580", "#c34a36")) +
+  theme(
+    axis.text.x = element_text(size = 16, face = "bold"),
+    axis.title.x = element_text(size = 18),
+    axis.title.y = element_text(size = 18),
+    axis.text.y = element_text(size = 16, face = "bold"),
+    plot.subtitle = element_text(size = 20, face = "bold"),
+    legend.title = element_text(size = 18),
+    legend.text = element_text(size = 18),
+    legend.justification = c("right", "center"),
+    legend.position = c(0.95 ,0.9),
+    legend.key.width = unit(1.2,"cm"),
+    panel.background = element_rect(fill = "#F6F6F6"),
+    panel.grid.major = element_line(size = 0.5, linetype = 'solid', colour = "white"), 
+    panel.grid.minor = element_line(size = 0.25, linetype = 'solid', colour = "white"),
+    plot.title = element_blank(),
+    legend.box = "horizontal",  
+    legend.direction = "horizontal"
+  ) +
+  geom_text(
+    data = slope_data,
+    aes(x = mean_x, y = mean_y, label = paste0("R\u00B2: ", round(r.squared, 2))),
+    inherit.aes = FALSE,
+    color = "black",
+    fontface = "bold",
+    size = 5,
+    hjust = -0.4
+  )  + 
+  labs(
+    color = "FDP intervals:",   # color legend title
+    fill = "FDP intervals:",    # fill legend title
+    shape = "FDP intervals:",   # shape legend title
+    linetype = "FDP intervals:" # linetype legend title
+  ) + 
+  guides(# To get a unified legend
+    color = guide_legend(ncol = 3, nrow = 1),  
+    fill = guide_legend(ncol = 3, nrow = 1),   
+    shape = guide_legend(ncol = 3, nrow = 1),  
+    linetype = guide_legend(ncol = 3, nrow = 1) 
+  ) 
+
+
+graph_power_cor
+
+
+ggsave(file = "/home/julie/Documents/Paper_codes/Paper_graphs/Correlation/Figures/Figure_6.png", height = 7, width = 14)
+
+```
+

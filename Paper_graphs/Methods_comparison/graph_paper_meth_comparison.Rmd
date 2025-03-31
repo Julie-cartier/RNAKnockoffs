@@ -1,0 +1,598 @@
+---
+title: "graph_paper_meth_comparaison"
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r load souces}
+source("/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Methods_comparison/Settings.R")
+source("/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Methods_comparison/Functions.R")
+
+```
+
+# Methods comparison : LSCIP/MVR/SDP/CI for the CRUKPAP cohort
+
+```{r Make LSCIP/MVR/SDP/CI graphs}
+
+#load table
+
+load("/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Methods_comparison/R_files/table_perfx10.R") # tere are 100 iterations (not 10)
+
+# create data frames
+
+df_done_synth_linear = df_perf_maker(table.perf.linear.comp_tot, list_target_fdr, KO_meth_names = c("SDP", "MVR", "LSCIP", "CI"), n.rep = 100)
+
+df_power_fdr <- df_done_synth_linear[[1]]
+df_fdp_fdr <- df_done_synth_linear[[2]] 
+df_power_fdp <- df_done_synth_linear[[3]]
+
+
+graph_power_fdr <- ggplot(df_power_fdr, aes(x = target_fdr, y = power, color = KO)) + 
+  ylab("Power")+ 
+  ylim(c(-0.25, 1.22)) +    
+  xlab("Target FDR (q)") + 
+  geom_ribbon(aes(ymin = power - std,ymax = power + std, group=KO, fill = KO), alpha = 0.15, colour = NA) + 
+  #geom_point(size = 3, shape = 3)+ 
+  geom_line(aes(group = KO, linetype = KO), linewidth = 1.5)+
+  scale_color_manual(values=c("#6050dc","#17becf", "#8FAD86", "#993300"))  +
+  scale_fill_manual(values=c("#6050dc","#17becf", "#8FAD86", "#993300")) +
+  scale_linetype_manual(values=c("dotdash", "longdash", "solid", "twodash")) +
+  theme(axis.text.x = element_text(size = 20, face = "bold"),
+  axis.title.x = element_text(size = 22),
+  axis.title.y = element_text(size = 22),
+  axis.text.y = element_text(size = 20, face = "bold"),
+  plot.subtitle = element_text(size = 24, face = "bold"),
+  legend.title = element_blank(),
+  legend.text = element_text(size = 24),
+  legend.justification = c("right", "center"),
+  #legend.key.width = unit(0.9,"cm"),
+  #legend.position = c(.4, 0.75),
+  legend.position = "none",
+  panel.background = element_rect(fill = "#F6F6F6"),
+                   panel.grid.major = element_line(size = 0.5, linetype = 'solid',
+                                colour = "white"), 
+                   panel.grid.minor = element_line(size = 0.25, linetype = 'solid',
+                                colour = "white"),
+  plot.title = element_blank(),
+  plot.margin = unit(c(0.6, 0, 0, 0.6), "cm")
+                   
+        )
+graph_power_fdr
+
+
+# Idem FDP vs FDR
+
+
+graph_fdp_fdr <- ggplot(df_fdp_fdr, aes(x = target_fdr, y = fdp, color = KO)) + 
+   ylab("FDP")+ 
+   xlab("Target FDR (q)") + 
+   ylim(c(-0.25, 1.22)) + 
+   geom_ribbon(aes(ymin = fdp - std,ymax = fdp + std, group = KO, fill = KO), alpha = 0.15, colour = NA) + 
+   #geom_point(size = 3, shape = 3)+ 
+   geom_line(aes(group = KO, linetype = KO), linewidth = 1.5)+
+   geom_abline(intercept = 0, slope = 1, color="black", linetype="dashed", linewidth = 1)+
+   #labs(subtitle = "Linear") +
+   scale_color_manual(values=c("#6050dc","#17becf", "#8FAD86", "#993300"))  +
+   scale_fill_manual(values=c("#6050dc","#17becf", "#8FAD86", "#993300")) +
+   scale_linetype_manual(values=c("dotdash", "longdash", "solid", "twodash")) +
+   theme(axis.text.x = element_text(size = 20, face = "bold"),
+   axis.title.x = element_text(size = 22),
+   axis.title.y = element_text(size = 22),
+   axis.text.y = element_text(size = 20, face = "bold"),
+   legend.title = element_blank(),
+   legend.text = element_text(size = 24),
+   legend.justification = c("right", "center"),
+   legend.position = c(.35, 0.8),
+   #legend.position = "none",
+   legend.key.width = unit(1.5,"cm"),
+   plot.subtitle = element_text(size = 18, face = "bold"),
+   panel.background = element_rect(fill = "#F6F6F6"),
+                   panel.grid.major = element_line(size = 0.5, linetype = 'solid',
+                                colour = "white"), 
+                   panel.grid.minor = element_line(size = 0.25, linetype = 'solid',
+                                colour = "white"),
+   plot.title = element_blank(),
+   plot.margin = unit(c(0.6, 0, 0, 0.6), "cm")
+        )  +  guides(linetype = guide_legend(override.aes = list(linewidth = 0.9)))
+
+graph_fdp_fdr
+
+
+# Power FDP
+
+graph_power_fdp <- ggplot(df_power_fdp, aes(x=fdp, y=power, color = KO)) + 
+   ylab("Power")+ 
+   xlab("FDP") + 
+   ylim(c(-0.25, 1.22)) + 
+   #ylim(c(-0.15, 1.20)) + 
+   # geom_pointrange( aes(ymin = power-std, ymax = power+std),linewidth = 1)+
+   geom_point(aes(shape = KO), size = 4) +
+   scale_shape_manual(values = c(7, 20, 15, 17, 18)) +  # Adjust the shape values according to your preference
+   geom_ribbon(aes(ymin = power - std, ymax = power + std, group = KO, fill = KO), alpha = 0.15, colour = NA) +
+   geom_line(data = subset(df_power_fdp, KO == 'LASSO'), aes(group = KO))+
+   #geom_line(aes(group = KO), linewidth = 1.5)+
+   labs(title = "Power vs FDP, k = 10, X from X real") +
+   scale_color_manual(values=c("#6050dc","#17becf", "#8FAD86", "#993300", "#DAA520"))  +
+   scale_fill_manual(values=c("#6050dc","#17becf", "#8FAD86", "#993300", "#DAA520")) +
+   theme(axis.text.x = element_text(size = 20, face = "bold"),
+   axis.title.x = element_text(size = 22),
+   axis.title.y = element_text(size = 22),
+   axis.text.y = element_text(size = 20, face = "bold"),
+   legend.title = element_blank(),
+   legend.text = element_text(size = 24),
+   legend.justification = c("right", "center"),
+   legend.position = c(.2, 0.7),
+   #legend.key = element_rect(fill = "lightblue", color = NA),
+  # Modifier la taille et la largeur des signes de la légende
+    #legend.key.size = unit(1.5, "cm"),
+    #legend.key.width = unit(1.5,"cm"),
+  panel.background = element_rect(fill = "#F6F6F6"),
+                   panel.grid.major = element_line(size = 0.5, linetype = 'solid',
+                                colour = "white"), 
+                   panel.grid.minor = element_line(size = 0.25, linetype = 'solid',
+                                colour = "white"),
+   plot.title = element_blank()
+        )
+        
+graph_power_fdp
+
+
+# Combined plots
+
+library(ggpubr)
+
+legend_power_fdr <- get_legend(graph_power_fdr)
+graph_power_fdp_fdr <-ggarrange(
+  graph_power_fdp,             
+  ggarrange(graph_power_fdr, graph_fdp_fdr, ncol = 2, labels = c("(b) ", "(c) "), font.label = list(size = 16)), 
+  nrow = 2, 
+  labels = "(a) ",
+  font.label = list(size = 16),
+  legend = "top",
+  heights = c(1.1, 1)
+  ) 
+
+ggsave(file = "/home/julie/Documents/Paper_codes/Paper_graphs/Methods_comparison/Figures/Figure_1.png", height = 10, width = 14)
+```
+
+# Supplementary materials MVR vs MAXENT 
+
+
+```{r Comparison of the performance of the two MRC methods}
+# load data files
+
+load("/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Methods_comparison/R_files/MRC_table_perfx10.R")
+
+#create data frames 
+df_done_MRC = df_perf_maker(table.perf.linear.MRC, list_target_fdr, KO_meth_names = c("MVR", "ME"), n.rep = 10)
+
+df_power_fdr <- df_done_MRC[[1]]
+df_fdp_fdr <- df_done_MRC[[2]] 
+df_power_fdp <- df_done_MRC[[3]]
+
+
+
+
+graph_power_fdr <- ggplot(df_power_fdr, aes(x = target_fdr, y = power, color = KO)) + 
+  ylab("Power")+ 
+  ylim(c(-0.25, 1.22)) +    
+  xlab("Target FDR (q)") + 
+  geom_ribbon(aes(ymin = power - std,ymax = power + std, group=KO, fill = KO), alpha = 0.15, colour = NA) + 
+  #geom_point(size = 3, shape = 3)+ 
+  geom_line(aes(group = KO, linetype = KO), linewidth = 1.5)+
+  scale_color_manual(values=c("#DAA520", "#8FAD86"))  +
+  scale_fill_manual(values=c("#DAA520", "#8FAD86")) +
+  scale_linetype_manual(values=c("longdash", "twodash")) +
+  theme(axis.text.x = element_text(size = 20, face = "bold"),
+  axis.title.x = element_text(size = 22),
+  axis.title.y = element_text(size = 22),
+  axis.text.y = element_text(size = 20, face = "bold"),
+  plot.subtitle = element_text(size = 24, face = "bold"),
+  legend.title = element_blank(),
+  #legend.key.width = unit(0.9,"cm"),
+  #legend.position = c(.4, 0.75),
+  legend.text = element_text(size = 24),
+   legend.justification = c("right", "center"),
+  legend.position = "none",
+  panel.background = element_rect(fill = "#F6F6F6"),
+                   panel.grid.major = element_line(size = 0.5, linetype = 'solid',
+                                colour = "white"), 
+                   panel.grid.minor = element_line(size = 0.25, linetype = 'solid',
+                                colour = "white"),
+  plot.title = element_blank(),
+  plot.margin = unit(c(0.6, 0, 0, 0.6), "cm")
+                   
+        )
+graph_power_fdr
+
+
+# Idem FDP vs FDR
+
+
+graph_fdp_fdr <- ggplot(df_fdp_fdr, aes(x = target_fdr, y = fdp, color = KO)) + 
+   ylab("FDP")+ 
+   xlab("Target FDR (q)") + 
+   ylim(c(-0.25, 1.22)) + 
+   geom_ribbon(aes(ymin = fdp - std,ymax = fdp + std, group = KO, fill = KO), alpha = 0.15, colour = NA) + 
+   #geom_point(size = 3, shape = 3)+ 
+   geom_line(aes(group = KO, linetype = KO), linewidth = 1.5)+
+   geom_abline(intercept = 0, slope = 1, color="black", linetype="dashed", linewidth = 1)+
+   #labs(subtitle = "Linear") +
+   scale_color_manual(values=c("#DAA520", "#8FAD86"))  +
+   scale_fill_manual(values=c("#DAA520", "#8FAD86")) +
+   scale_linetype_manual(values=c("longdash", "twodash")) +
+   theme(axis.text.x = element_text(size = 20, face = "bold"),
+   axis.title.x = element_text(size = 22),
+   axis.title.y = element_text(size = 22),
+   axis.text.y = element_text(size = 20, face = "bold"),
+   legend.title = element_blank(),
+   legend.text = element_text(size = 24),
+   legend.justification = c("right", "center"),
+   legend.key.width = unit(1.5,"cm"),
+   legend.position = c(.35, 0.7),
+   plot.subtitle = element_text(size = 18, face = "bold"),
+   panel.background = element_rect(fill = "#F6F6F6"),
+                   panel.grid.major = element_line(size = 0.5, linetype = 'solid',
+                                colour = "white"), 
+                   panel.grid.minor = element_line(size = 0.25, linetype = 'solid',
+                                colour = "white"),
+   plot.title = element_blank(),
+   plot.margin = unit(c(0.6, 0, 0, 0.6), "cm")
+        ) +  guides(linetype = guide_legend(override.aes = list(linewidth = 0.9)))
+
+
+graph_fdp_fdr
+
+
+# Power FDP
+
+graph_power_fdp <- ggplot(df_power_fdp, aes(x=fdp, y=power, color = KO)) + 
+   ylab("Power")+ 
+   xlab("FDP") + 
+   ylim(c(-0.25, 1.22)) + 
+   #ylim(c(-0.15, 1.20)) + 
+   # geom_pointrange( aes(ymin = power-std, ymax = power+std),linewidth = 1)+
+   geom_point(aes(shape = KO), size = 4) +
+   scale_shape_manual(values = c( 20, 15, 17, 18)) +  # Adjust the shape values according to your preference
+   geom_ribbon(aes(ymin = power - std, ymax = power + std, group = KO, fill = KO), alpha = 0.15, colour = NA) +
+   geom_line(data = subset(df_power_fdp, KO == 'LASSO'), aes(group = KO))+
+   #geom_line(aes(group = KO), linewidth = 1.5)+
+   labs(title = "Power vs FDP, k = 10, X from X real") +
+   scale_color_manual(values=c("#DAA520", "#8FAD86"))  +
+   scale_fill_manual(values=c("#DAA520", "#8FAD86")) +
+   theme(axis.text.x = element_text(size = 20, face = "bold"),
+   axis.title.x = element_text(size = 22),
+   axis.title.y = element_text(size = 22),
+   axis.text.y = element_text(size = 20, face = "bold"),
+   legend.title = element_blank(),
+   legend.text = element_text(size = 24),
+   legend.justification = c("right", "center"),
+   legend.position = c(.3, 0.8),
+   #legend.key = element_rect(fill = "lightblue", color = NA),
+  # Modifier la taille et la largeur des signes de la légende
+    #legend.key.size = unit(1.5, "cm"),
+    #legend.key.width = unit(1.5,"cm"),
+  panel.background = element_rect(fill = "#F6F6F6"),
+                   panel.grid.major = element_line(size = 0.5, linetype = 'solid',
+                                colour = "white"), 
+                   panel.grid.minor = element_line(size = 0.25, linetype = 'solid',
+                                colour = "white"),
+   plot.title = element_blank()
+        )
+        
+graph_power_fdp
+
+
+library(ggpubr)
+
+legend_power_fdr <- get_legend(graph_power_fdr)
+graph_power_fdp_fdr <-ggarrange(
+  graph_power_fdp,                # First row with line plot
+  # Second row with box and dot plots
+  ggarrange(graph_power_fdr, graph_fdp_fdr, ncol = 2, labels = c("(b) ", "(c)"), font.label = list(size = 14)), 
+  nrow = 2, 
+  labels = "(a) ",
+  font.label = list(size = 14),
+  heights = c(1.1, 1)
+  ) 
+
+
+ggsave(file = "/home/julie/Documents/Paper_codes/Paper_graphs/Methods_comparison/Figures/SM_Figure_3.png", height = 10, width = 14)
+```
+
+
+
+
+# Methods comparison : LSCIP/MVR/SDP/CI for the breast cancer cohort
+
+
+```{r Comparison for the BC cohort}
+
+# load experiments results
+
+load("/home/julie/Documents/Paper_codes/New_cohorts_EXPERIMENTS/BC/R_files/table_perf_method_comparaison_3e_cohorte.R")
+
+# create data frame for graphical representation
+
+df_done_synth_linear = df_perf_maker(table.perf.linear.comp.meth, list_target_fdr, KO_meth_names = c("SDP", "MVR", "LSCIP", "CI"), n.rep = 100)
+
+df_power_fdr <- df_done_synth_linear[[1]]
+df_fdp_fdr <- df_done_synth_linear[[2]] 
+df_power_fdp <- df_done_synth_linear[[3]]
+
+
+# create graphs
+
+graph_power_fdr <- ggplot(df_power_fdr, aes(x = target_fdr, y = power, color = KO)) + 
+  ylab("Power")+ 
+  ylim(c(-0.25, 1.22)) +    
+  xlab("Target FDR (q)") + 
+  geom_ribbon(aes(ymin = power - std,ymax = power + std, group=KO, fill = KO), alpha = 0.15, colour = NA) + 
+  #geom_point(size = 3, shape = 3)+ 
+  geom_line(aes(group = KO, linetype = KO), linewidth = 1.5)+
+  scale_color_manual(values=c("#6050dc","#17becf", "#8FAD86", "#993300"))  +
+  scale_fill_manual(values=c("#6050dc","#17becf", "#8FAD86", "#993300")) +
+  scale_linetype_manual(values=c("dotdash", "longdash", "solid", "twodash")) +
+  theme(axis.text.x = element_text(size = 20, face = "bold"),
+  axis.title.x = element_text(size = 22),
+  axis.title.y = element_text(size = 22),
+  axis.text.y = element_text(size = 20, face = "bold"),
+  plot.subtitle = element_text(size = 24, face = "bold"),
+  legend.title = element_blank(),
+  legend.text = element_text(size = 24),
+  legend.justification = c("right", "center"),
+  legend.position = "none",
+  panel.background = element_rect(fill = "#F6F6F6"),
+                   panel.grid.major = element_line(size = 0.5, linetype = 'solid',
+                                colour = "white"), 
+                   panel.grid.minor = element_line(size = 0.25, linetype = 'solid',
+                                colour = "white"),
+  plot.title = element_blank(),
+ plot.margin = unit(c(0.6, 0, 0, 0.6), "cm")
+                   
+        )
+graph_power_fdr
+
+
+graph_fdp_fdr <- ggplot(df_fdp_fdr, aes(x = target_fdr, y = fdp, color = KO)) + 
+   ylab("FDP")+ 
+   xlab("Target FDR (q)") + 
+   ylim(c(-0.25, 1.22)) + 
+   geom_ribbon(aes(ymin = fdp - std,ymax = fdp + std, group = KO, fill = KO), alpha = 0.15, colour = NA) + 
+   #geom_point(size = 3, shape = 3)+ 
+   geom_line(aes(group = KO, linetype = KO), linewidth = 1.5)+
+   geom_abline(intercept = 0, slope = 1, color="black", linetype="dashed", linewidth = 1)+
+   #labs(subtitle = "Linear") +
+   scale_color_manual(values=c("#6050dc","#17becf", "#8FAD86", "#993300"))  +
+   scale_fill_manual(values=c("#6050dc","#17becf", "#8FAD86", "#993300")) +
+   scale_linetype_manual(values=c("dotdash", "longdash", "solid", "twodash")) +
+   theme(axis.text.x = element_text(size = 20, face = "bold"),
+   axis.title.x = element_text(size = 22),
+   axis.title.y = element_text(size = 22),
+   axis.text.y = element_text(size = 20, face = "bold"),
+   legend.title = element_blank(),
+   legend.text = element_text(size = 24),
+   legend.justification = c("right", "center"),
+   legend.position = c(.35, 0.8),
+   #legend.position = "none",
+   legend.key.width = unit(1.5,"cm"),
+   plot.subtitle = element_text(size = 18, face = "bold"),
+   panel.background = element_rect(fill = "#F6F6F6"),
+                   panel.grid.major = element_line(size = 0.5, linetype = 'solid',
+                                colour = "white"), 
+                   panel.grid.minor = element_line(size = 0.25, linetype = 'solid',
+                                colour = "white"),
+   plot.title = element_blank(),
+   plot.margin = unit(c(0.6, 0, 0, 0.6), "cm")
+        ) +   guides(linetype = guide_legend(override.aes = list(linewidth = 0.9)))
+
+
+graph_fdp_fdr
+
+
+graph_power_fdp <- ggplot(df_power_fdp, aes(x=fdp, y=power, color = KO)) + 
+   ylab("Power")+ 
+   xlab("FDP") + 
+   ylim(c(-0.25, 1.22)) + 
+   #ylim(c(-0.15, 1.20)) + 
+   # geom_pointrange( aes(ymin = power-std, ymax = power+std),linewidth = 1)+
+   geom_point(aes(shape = KO), size = 4) +
+   scale_shape_manual(values = c(7, 20, 15, 17, 18)) +  # Adjust the shape values according to your preference
+   geom_ribbon(aes(ymin = power - std, ymax = power + std, group = KO, fill = KO), alpha = 0.15, colour = NA) +
+   geom_line(data = subset(df_power_fdp, KO == 'LASSO'), aes(group = KO))+
+   #geom_line(aes(group = KO), linewidth = 1.5)+
+   labs(title = "Power vs FDP, k = 10, X from X real") +
+   scale_color_manual(values=c("#6050dc","#17becf", "#8FAD86", "#993300", "#DAA520"))  +
+   scale_fill_manual(values=c("#6050dc","#17becf", "#8FAD86", "#993300", "#DAA520")) +
+   theme(axis.text.x = element_text(size = 20, face = "bold"),
+   axis.title.x = element_text(size = 22),
+   axis.title.y = element_text(size = 22),
+   axis.text.y = element_text(size = 20, face = "bold"),
+   legend.title = element_blank(),
+   legend.text = element_text(size = 24),
+   legend.justification = c("right", "center"),
+   legend.position = c(.2, 0.7),
+   #legend.key = element_rect(fill = "lightblue", color = NA),
+  # Modifier la taille et la largeur des signes de la légende
+    #legend.key.size = unit(1.5, "cm"),
+    #legend.key.width = unit(1.5,"cm"),
+  panel.background = element_rect(fill = "#F6F6F6"),
+                   panel.grid.major = element_line(size = 0.5, linetype = 'solid',
+                                colour = "white"), 
+                   panel.grid.minor = element_line(size = 0.25, linetype = 'solid',
+                                colour = "white"),
+   plot.title = element_blank()
+        )
+        
+graph_power_fdp
+
+
+# Merged performance graphs
+
+
+legend_power_fdr <- get_legend(graph_power_fdr)
+graph_power_fdp_fdr <-ggarrange(
+  graph_power_fdp,                
+  ggarrange(graph_power_fdr, graph_fdp_fdr, ncol = 2, labels = c("(b) ", "(c) "), font.label = list(size = 16)), 
+  nrow = 2, 
+  labels = "(a) ",
+  font.label = list(size = 16),
+  legend = "top",
+  heights = c(1.1, 1)
+  ) 
+
+
+ggsave(file = "/home/julie/Documents/Paper_codes/Paper_graphs/Methods_comparison/Figures/SM_figure_15.png", height = 10, width = 14)
+```
+
+
+# Comparison of the methods : LSCIP/MVR/SDP/CI for the AEGIS cohort
+
+
+```{r}
+
+# load experiments results
+
+load("/home/julie/Documents/Paper_codes/New_cohorts_EXPERIMENTS/AEGIS/R_files/table_perf_method_comparaison_2e_cohorte.R")
+
+# Create data frame from graphical representation
+
+df_done_synth_linear = df_perf_maker(table.perf.linear.comp_tot, list_target_fdr, KO_meth_names = c("SDP", "MVR", "LSCIP", "CI"), n.rep = 100)
+
+
+df_power_fdr <- df_done_synth_linear[[1]]
+df_fdp_fdr <- df_done_synth_linear[[2]] 
+df_power_fdp <- df_done_synth_linear[[3]]
+
+# Create graphs
+
+graph_power_fdr <- ggplot(df_power_fdr, aes(x = target_fdr, y = power, color = KO)) + 
+  ylab("Power")+ 
+  ylim(c(-0.25, 1.22)) +    
+  xlab("Target FDR (q)") + 
+  geom_ribbon(aes(ymin = power - std,ymax = power + std, group=KO, fill = KO), alpha = 0.15, colour = NA) + 
+  #geom_point(size = 3, shape = 3)+ 
+  geom_line(aes(group = KO, linetype = KO), linewidth = 1.5)+
+  scale_color_manual(values=c("#6050dc","#17becf", "#8FAD86", "#993300"))  +
+  scale_fill_manual(values=c("#6050dc","#17becf", "#8FAD86", "#993300")) +
+  scale_linetype_manual(values=c("dotdash", "longdash", "solid", "twodash")) +
+  theme(axis.text.x = element_text(size = 20, face = "bold"),
+  axis.title.x = element_text(size = 22),
+  axis.title.y = element_text(size = 22),
+  axis.text.y = element_text(size = 20, face = "bold"),
+  plot.subtitle = element_text(size = 24, face = "bold"),
+  legend.title = element_blank(),
+  legend.text = element_text(size = 24),
+  legend.justification = c("right", "center"),
+  #legend.key.width = unit(0.9,"cm"),
+  #legend.position = c(.4, 0.75),
+  legend.position = "none",
+  panel.background = element_rect(fill = "#F6F6F6"),
+                   panel.grid.major = element_line(size = 0.5, linetype = 'solid',
+                                colour = "white"), 
+                   panel.grid.minor = element_line(size = 0.25, linetype = 'solid',
+                                colour = "white"),
+  plot.title = element_blank(),
+ plot.margin = unit(c(0.6, 0, 0, 0.6), "cm")
+                   
+        )
+graph_power_fdr
+
+
+
+graph_fdp_fdr <- ggplot(df_fdp_fdr, aes(x = target_fdr, y = fdp, color = KO)) + 
+   ylab("FDP")+ 
+   xlab("Target FDR (q)") + 
+   ylim(c(-0.25, 1.22)) + 
+   geom_ribbon(aes(ymin = fdp - std,ymax = fdp + std, group = KO, fill = KO), alpha = 0.15, colour = NA) + 
+   #geom_point(size = 3, shape = 3)+ 
+   geom_line(aes(group = KO, linetype = KO), linewidth = 1.5)+
+   geom_abline(intercept = 0, slope = 1, color="black", linetype="dashed", linewidth = 1)+
+   #labs(subtitle = "Linear") +
+   scale_color_manual(values=c("#6050dc","#17becf", "#8FAD86", "#993300"))  +
+   scale_fill_manual(values=c("#6050dc","#17becf", "#8FAD86", "#993300")) +
+   scale_linetype_manual(values=c("dotdash", "longdash", "solid", "twodash")) +
+   theme(axis.text.x = element_text(size = 20, face = "bold"),
+   axis.title.x = element_text(size = 22),
+   axis.title.y = element_text(size = 22),
+   axis.text.y = element_text(size = 20, face = "bold"),
+   legend.title = element_blank(),
+   legend.text = element_text(size = 24),
+   legend.justification = c("right", "center"),
+   legend.position = c(.35, 0.8),
+   legend.key.width = unit(1.5,"cm"),
+   plot.subtitle = element_text(size = 18, face = "bold"),
+   panel.background = element_rect(fill = "#F6F6F6"),
+                   panel.grid.major = element_line(size = 0.5, linetype = 'solid',
+                                colour = "white"), 
+                   panel.grid.minor = element_line(size = 0.25, linetype = 'solid',
+                                colour = "white"),
+   plot.title = element_blank(),
+   plot.margin = unit(c(0.6, 0, 0, 0.6), "cm")
+        ) +  guides(linetype = guide_legend(override.aes = list(linewidth = 0.9)))
+
+graph_fdp_fdr
+
+
+# Power FDP
+
+graph_power_fdp <- ggplot(df_power_fdp, aes(x=fdp, y=power, color = KO)) + 
+   ylab("Power")+ 
+   xlab("FDP") + 
+   ylim(c(-0.25, 1.22)) + 
+   #ylim(c(-0.15, 1.20)) + 
+   # geom_pointrange( aes(ymin = power-std, ymax = power+std),linewidth = 1)+
+   geom_point(aes(shape = KO), size = 4) +
+   scale_shape_manual(values = c(7, 20, 15, 17, 18)) +  # Adjust the shape values according to your preference
+   geom_ribbon(aes(ymin = power - std, ymax = power + std, group = KO, fill = KO), alpha = 0.15, colour = NA) +
+   geom_line(data = subset(df_power_fdp, KO == 'LASSO'), aes(group = KO))+
+   #geom_line(aes(group = KO), linewidth = 1.5)+
+   labs(title = "Power vs FDP, k = 10, X from X real") +
+   scale_color_manual(values=c("#6050dc","#17becf", "#8FAD86", "#993300", "#DAA520"))  +
+   scale_fill_manual(values=c("#6050dc","#17becf", "#8FAD86", "#993300", "#DAA520")) +
+   theme(axis.text.x = element_text(size = 20, face = "bold"),
+   axis.title.x = element_text(size = 22),
+   axis.title.y = element_text(size = 22),
+   axis.text.y = element_text(size = 20, face = "bold"),
+   legend.title = element_blank(),
+   legend.text = element_text(size = 24),
+   legend.justification = c("right", "center"),
+   legend.position = c(.2, 0.7),
+   #legend.key = element_rect(fill = "lightblue", color = NA),
+  # Modifier la taille et la largeur des signes de la légende
+    #legend.key.size = unit(1.5, "cm"),
+    #legend.key.width = unit(1.5,"cm"),
+  panel.background = element_rect(fill = "#F6F6F6"),
+                   panel.grid.major = element_line(size = 0.5, linetype = 'solid',
+                                colour = "white"), 
+                   panel.grid.minor = element_line(size = 0.25, linetype = 'solid',
+                                colour = "white"),
+   plot.title = element_blank()
+        ) 
+        
+graph_power_fdp
+
+
+# Combined performances graphs
+
+legend_power_fdr <- get_legend(graph_power_fdr)
+graph_power_fdp_fdr <- ggarrange(
+  graph_power_fdp,              
+  ggarrange(graph_power_fdr, graph_fdp_fdr, ncol = 2, labels = c("(b) ", "(c) "), font.label = list(size = 16)), 
+  nrow = 2, 
+  labels = "(a) ",
+  font.label = list(size = 16),
+  legend = "top",
+  heights = c(1.1, 1)
+  ) 
+
+
+
+ggsave(file = "/home/julie/Documents/Paper_codes/Paper_graphs/Methods_comparison/Figures/SM_figure_13.png", height = 10, width = 14)
+```
+

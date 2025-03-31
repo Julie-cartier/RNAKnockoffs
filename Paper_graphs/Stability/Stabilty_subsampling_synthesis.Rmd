@@ -1,0 +1,476 @@
+---
+title: "Stability_analysis_fake_y_10_paper"
+output: html_document
+---
+
+In this script, 
+- the stabilty study is made for 10 different outcomes y
+- At each iteration, the selection is made using the 749 genes and a subset of patients a 100 times. The subset of patients is determined using a 10-fold cross validation 10 times
+- We compare the results for the KO framework (q = 0.2, q = 0.5), KOPI (q = 0.2, q= 0.5), the LASSO where lambda is chosen by cross validation, and tha LASSO with lambda oracle
+- Results are aggregated into one histogram representing features selection frequencies.
+_ We also use results table to compute informative metrics (table in the paper)
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r load sources and files }
+source("/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Stability/Settings.R")
+source("/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Stability/Functions.R")
+
+```
+
+
+```{r Aggregation of the results obtained over the ten iterations}
+y.rep <- 10
+beta.tot <- c()
+table.selected.genes.LPLR.tot <- data.frame()
+table.selected.genes.LPLR.oracle.tot <- data.frame()
+
+table.selected_genes.KOPI_0.1.tot <- data.frame()
+table.selected_genes.KOPI_0.2.tot <- data.frame()
+table.selected_genes.KOPI_0.3.tot <- data.frame()
+table.selected_genes.KOPI_0.5.tot <- data.frame()
+
+table.selected_genes.Vanilla_0.1.tot <- data.frame()
+table.selected_genes.Vanilla_0.2.tot <- data.frame()
+table.selected_genes.Vanilla_0.3.tot <- data.frame()
+table.selected_genes.Vanilla_0.5.tot <- data.frame()
+
+data_analysis <- data.frame()
+
+for (rep in 1:y.rep){
+  print(rep)
+  # load selected features for all methods 
+  
+  load(str_glue("/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Stability/R_files/y_rep/table.selected_genes_cv_Vanilla_",rep,".R"))
+  load(str_glue("/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Stability/R_files/y_rep/table.selected_genes_cv_KOPI_",rep,".R"))
+  load(str_glue("/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Stability/R_files/y_rep/table_selected_genes_LPLR_",rep,".R"))
+  load(str_glue("/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Stability/R_files/y_rep/table_selected_genes_LPLR_oracle_",rep,".R"))
+  
+   # Save beta used at each iteration
+  beta.tot <- c(beta.tot, beta)
+  
+  # Merged results
+  table.selected.genes.LPLR.tot <- rbind(table.selected.genes.LPLR.tot, table.selected.genes.LPLR)
+  table.selected.genes.LPLR.oracle.tot <- rbind(table.selected.genes.LPLR.oracle.tot, table.selected.genes.LPLR.oracle)
+   
+  table.selected_genes.Vanilla_0.1.tot <- rbind(table.selected_genes.Vanilla_0.1.tot, table.selected_genes.Vanilla_0.1)
+  table.selected_genes.Vanilla_0.2.tot <- rbind(table.selected_genes.Vanilla_0.2.tot, table.selected_genes.Vanilla_0.2)
+  table.selected_genes.Vanilla_0.3.tot <- rbind(table.selected_genes.Vanilla_0.3.tot, table.selected_genes.Vanilla_0.3)
+  table.selected_genes.Vanilla_0.5.tot <- rbind(table.selected_genes.Vanilla_0.5.tot, table.selected_genes.Vanilla_0.5)
+  
+  table.selected_genes.KOPI_0.1.tot <- rbind(table.selected_genes.KOPI_0.1.tot, table.selected_genes.KOPI_0.1)
+  table.selected_genes.KOPI_0.2.tot <- rbind(table.selected_genes.KOPI_0.2.tot, table.selected_genes.KOPI_0.2)
+  table.selected_genes.KOPI_0.3.tot <- rbind(table.selected_genes.KOPI_0.3.tot, table.selected_genes.KOPI_0.3)
+  table.selected_genes.KOPI_0.5.tot <- rbind(table.selected_genes.KOPI_0.5.tot, table.selected_genes.KOPI_0.5)
+  
+  
+  # Feature selection metrics (used in the paper table)
+
+ list_non_null = which(beta!=0)
+  true_genes = rep("False discoveries ", ncol(X_real))
+  true_genes[ which(beta!=0)] <- "True genes "
+  bin_width <- 0.01
+  
+  prop_selection.genes_LPLR <- rowMeans(table.selected.genes.LPLR)
+  prop_selection.genes_LPLR_0 <- prop_selection.genes_LPLR[ !prop_selection.genes_LPLR == 0]
+  true_genes_LPLR_0 = true_genes[ !prop_selection.genes_LPLR == 0]
+
+  df.genes <- data.frame(freq = prop_selection.genes_LPLR_0, status = as.factor(true_genes_LPLR_0))
+
+  prop_selection.genes_LPLR_oracle <- rowMeans(table.selected.genes.LPLR.oracle)
+  prop_selection.genes_LPLR_oracle_0 <- prop_selection.genes_LPLR_oracle[ !prop_selection.genes_LPLR_oracle == 0]
+  true_genes_LPLR_oracle_0 <- true_genes[ !prop_selection.genes_LPLR_oracle == 0]
+
+  df.genes.oracle <- data.frame(freq = prop_selection.genes_LPLR_oracle_0, status = as.factor(true_genes_LPLR_oracle_0))
+
+
+  prop_selection_0.2 <- rowSums(table.selected_genes.KOPI_0.2)
+  prop_selection_0.5 <- rowSums(table.selected_genes.KOPI_0.5)
+
+  prop_selection_0.2_0 <- prop_selection_0.2[ !prop_selection_0.2 == 0]
+  prop_selection_0.5_0 <- prop_selection_0.5[ !prop_selection_0.5 == 0]
+
+  data_0.2_KOPI <- data.frame(freq = prop_selection_0.2_0/100, status = as.factor(true_genes[ !prop_selection_0.2 == 0]))
+  data_0.5_KOPI <- data.frame(freq = prop_selection_0.5_0/100, status = as.factor(true_genes[ !prop_selection_0.5 == 0]))
+
+
+  prop_selection_0.2 <- rowSums(table.selected_genes.Vanilla_0.2)
+  prop_selection_0.5 <- rowSums(table.selected_genes.Vanilla_0.5)
+
+  prop_selection_0.2_0 <- prop_selection_0.2[ !prop_selection_0.2 == 0]
+  prop_selection_0.5_0 <- prop_selection_0.5[ !prop_selection_0.5 == 0]
+
+  data_0.2 <- data.frame(freq = prop_selection_0.2_0/100, status = as.factor(true_genes[ !prop_selection_0.2 == 0]))
+  data_0.5 <- data.frame(freq = prop_selection_0.5_0/100, status = as.factor(true_genes[ !prop_selection_0.5 == 0]))
+
+ 
+  
+  max.freq.LPLR <- max(df.genes$freq)
+  max.freq.FD.LPLR <- nrow(df.genes[df.genes$freq == max.freq.LPLR & df.genes$status == "False discoveries ",])
+  max.freq.TD.LPLR <- nrow(df.genes[df.genes$freq == max.freq.LPLR & df.genes$status == "True genes ",])
+
+  
+  max.freq.LPLR.oracle <- max(df.genes.oracle$freq)
+  max.freq.FD.LPLR.oracle <- nrow(df.genes.oracle[df.genes.oracle$freq == max.freq.LPLR.oracle & df.genes.oracle$status == "False discoveries ",])
+  max.freq.TD.LPLR.oracle <- nrow(df.genes.oracle[df.genes.oracle$freq == max.freq.LPLR.oracle & df.genes.oracle$status == "True genes ",])
+
+
+  max.freq.KOPI_0.2 <- max(data_0.2_KOPI$freq)
+  max.freq.FD.KOPI_0.2 <- nrow(data_0.2_KOPI[data_0.2_KOPI$freq == max.freq.KOPI_0.2 & data_0.2_KOPI$status == "False discoveries ",])
+  max.freq.TD.KOPI_0.2 <- nrow(data_0.2_KOPI[data_0.2_KOPI$freq == max.freq.KOPI_0.2 & data_0.2_KOPI$status == "True genes ",])
+  
+  
+  max.freq.KOPI_0.5 <- max(data_0.5_KOPI$freq)
+  max.freq.FD.KOPI_0.5 <- nrow(data_0.5_KOPI[data_0.5_KOPI$freq == max.freq.KOPI_0.5 & data_0.5_KOPI$status == "False discoveries ",])
+  max.freq.TD.KOPI_0.5 <- nrow(data_0.5_KOPI[data_0.5_KOPI$freq == max.freq.KOPI_0.5 & data_0.5_KOPI$status == "True genes ",])
+  
+  max.freq.KO_0.2 <- max(data_0.2$freq)
+  max.freq.FD.KO_0.2 <- nrow(data_0.2[data_0.2$freq == max.freq.KO_0.2 & data_0.2$status == "False discoveries ",])
+  max.freq.TD.KO_0.2 <- nrow(data_0.2[data_0.2$freq == max.freq.KO_0.2 & data_0.2$status == "True genes ",])
+  
+  max.freq.KO_0.5 <- max(data_0.5$freq)
+  max.freq.FD.KO_0.5 <- nrow(data_0.5[data_0.5$freq == max.freq.KO_0.5 & data_0.5$status == "False discoveries ",])
+  max.freq.TD.KO_0.5 <- nrow(data_0.5[data_0.5$freq == max.freq.KO_0.5 & data_0.5$status == "True genes ",])
+  
+  data_analysis_part <- data.frame(
+    max.freq = c(max.freq.LPLR, max.freq.LPLR.oracle, max.freq.KO_0.2, max.freq.KO_0.5, max.freq.KOPI_0.2, max.freq.KOPI_0.5), 
+    max.freq.FD = c(max.freq.FD.LPLR, max.freq.FD.LPLR.oracle, max.freq.FD.KO_0.2, max.freq.FD.KO_0.5, max.freq.FD.KOPI_0.2, max.freq.FD.KOPI_0.5), 
+    max.freq.TD = c(max.freq.TD.LPLR, max.freq.TD.LPLR.oracle, max.freq.TD.KO_0.2, max.freq.TD.KO_0.5, max.freq.TD.KOPI_0.2, max.freq.TD.KOPI_0.5), 
+    method = c("LPLR (lambda.min)", "LPLR (lambda.oracle)", "KO 0.2", "KO 0.5", "KOPI 0.2", "KOPI 0.5")) 
+  
+  data_analysis <- rbind(data_analysis, data_analysis_part)
+
+  }
+```
+
+
+Sometimes there are error messages when no features is selected (max(numeric(o)))
+
+### Final histograms
+
+```{r Aggregated histograms with feature selection frequency accross the 10 iterations}
+
+# The results are stacked which means that we treat the results as if there were 100 non null genes.
+
+# get the non null beta for all iterations
+
+list_non_null <- which(beta.tot!=0)
+true_genes <- rep("False discoveries ", ncol(X_real)*y.rep)
+true_genes[ which(beta.tot!=0)] <- "True genes "
+bin_width <- 0.01
+
+# get selection frequency 
+
+# for the LASSO
+
+prop_selection.genes_LPLR <- rowMeans(table.selected.genes.LPLR.tot)
+prop_selection.genes_LPLR_0 <- prop_selection.genes_LPLR[ !prop_selection.genes_LPLR == 0]# Remove features that have never been selected
+true_genes_LPLR_0 <- true_genes[ !prop_selection.genes_LPLR == 0]
+
+df.genes <- data.frame(freq = prop_selection.genes_LPLR_0, status = as.factor(true_genes_LPLR_0))
+
+max_bin_count_LPLR <- df.genes$freq %>% cut(breaks = seq(0, 1, by = bin_width), include.lowest = TRUE) %>% table() %>% max() # To adjust y-axis size
+
+# for the oracle LASSO
+
+prop_selection.genes_LPLR_oracle <- rowMeans(table.selected.genes.LPLR.oracle.tot)
+prop_selection.genes_LPLR_oracle_0 <- prop_selection.genes_LPLR_oracle[ !prop_selection.genes_LPLR_oracle == 0]# Remove features that have never been selected
+true_genes_LPLR_oracle_0 <- true_genes[ !prop_selection.genes_LPLR_oracle == 0]
+
+df.genes.oracle <- data.frame(freq = prop_selection.genes_LPLR_oracle_0, status = as.factor(true_genes_LPLR_oracle_0))
+
+max_bin_count_LPLR_oracle <- df.genes.oracle$freq %>% cut(breaks = seq(0, 1, by = bin_width), include.lowest = TRUE) %>% table() %>% max() # To adjust y-axis size
+
+# For KOPI
+
+prop_selection_0.2 <- rowSums(table.selected_genes.KOPI_0.2.tot)
+prop_selection_0.5 = rowSums(table.selected_genes.KOPI_0.5.tot)
+
+prop_selection_0.2_0 <- prop_selection_0.2[ !prop_selection_0.2 == 0]# Remove features that have never been selected
+prop_selection_0.5_0 <- prop_selection_0.5[ !prop_selection_0.5 == 0]# Remove features that have never been selected
+
+data_0.2_KOPI <- data.frame(freq = prop_selection_0.2_0/100, status = as.factor(true_genes[ !prop_selection_0.2 == 0]))
+data_0.5_KOPI <- data.frame(freq = prop_selection_0.5_0/100, status = as.factor(true_genes[ !prop_selection_0.5 == 0]))
+
+max_bin_count_KOPI_0.2 <- data_0.2_KOPI$freq %>% cut(breaks = seq(0, 1, by = bin_width), include.lowest = TRUE) %>% table() %>% max() # To adjust y-axis size
+max_bin_count_KOPI_0.5 <- data_0.5_KOPI$freq %>% cut(breaks = seq(0, 1, by = bin_width), include.lowest = TRUE) %>% table() %>% max()# To adjust y-axis size
+
+# For the KO framework
+
+prop_selection_0.2 <- rowSums(table.selected_genes.Vanilla_0.2.tot)
+prop_selection_0.5 <- rowSums(table.selected_genes.Vanilla_0.5.tot)
+
+prop_selection_0.2_0 <- prop_selection_0.2[ !prop_selection_0.2 == 0]# Remove features that have never been selected
+prop_selection_0.5_0 <- prop_selection_0.5[ !prop_selection_0.5 == 0]# Remove features that have never been selected
+
+data_0.2 <- data.frame(freq = prop_selection_0.2_0/100, status = as.factor(true_genes[ !prop_selection_0.2 == 0]))
+data_0.5 <- data.frame(freq = prop_selection_0.5_0/100, status = as.factor(true_genes[ !prop_selection_0.5 == 0]))
+
+max_bin_count_KO_0.2 <- data_0.2$freq %>% cut(breaks = seq(0, 1, by = bin_width), include.lowest = TRUE) %>% table() %>% max()# To adjust y-axis size
+max_bin_count_KO_0.5 <- data_0.5$freq %>% cut(breaks = seq(0, 1, by = bin_width), include.lowest = TRUE) %>% table() %>% max()# To adjust y-axis size
+
+ylim.value <- max(max_bin_count_KO_0.2, max_bin_count_KO_0.5, max_bin_count_KOPI_0.5, max_bin_count_KOPI_0.2, max_bin_count_LPLR)
+
+hist.genes <- ggplot(df.genes, aes(x = freq, fill = status)) +
+  geom_histogram(binwidth = 0.01, color = "black") +
+  #ylim(0, ylim.value) +
+  labs(title = "Selection proportion of genes selected more than once",
+       x = "Selection frequency",
+       y = "Number of genes") +
+  theme(axis.text.x = element_text(size = 20, face = "bold"),
+        axis.title.x = element_text(size = 24),
+        axis.title.y = element_text(size = 24),
+        axis.text.y = element_text(size = 20, face = "bold"),
+        plot.subtitle = element_text(hjust = 0),
+        plot.caption = element_text(size = 12, face = "bold"),
+        panel.background = element_rect(fill = "#F6F6F6"),
+        panel.grid.major = element_line(size = 0.5, linetype = 'solid', colour = "white"), 
+        panel.grid.minor = element_line(size = 0.25, linetype = 'solid', colour = "white"),
+        plot.title = element_blank(),
+        legend.position = c(0.5, 0.8),
+        legend.text = element_text(size = 20),    
+ legend.title = element_text(size = 20)  # Format du titre de la légende
+  ) +
+  scale_fill_manual(
+    values = c("#7c6fb0", "#FF5733", "#FFFF66"),
+    name = expression("LASSO (" * lambda[min] * "), n = 2150")
+  )
+print(hist.genes)
+
+
+TP_1_LPLR <- nrow(df.genes[df.genes$freq == 1 & df.genes$status == "True genes ", ])
+FD_1_LPLR <- nrow(df.genes[df.genes$freq == 1 & df.genes$status == "False discoveries ", ])
+nb_selected_LPLR <- nrow(df.genes)
+prop_TD_LPLR <- 100*nrow(df.genes[df.genes$status == "True genes ",])/nb_selected_LPLR
+TP_all_LPLR <- nrow(df.genes[df.genes$status == "True genes ", ])
+
+
+hist.genes.oracle <- ggplot(df.genes.oracle, aes(x = freq, fill = status)) +
+    geom_histogram(binwidth = 0.01, color = "black") +
+    #ylim(0, ylim.value) +
+    coord_cartesian(xlim = c(0, 1)) + 
+    labs(title = "Selection proportion of genes selected more than once",
+         x = "Selection frequency",
+         y = "Number of genes") +
+    theme(axis.text.x = element_text(size = 20, face = "bold"),
+          axis.title.x = element_text(size = 24),
+          axis.title.y = element_text(size = 24),
+          axis.text.y = element_text(size = 20, face = "bold"),
+          plot.subtitle = element_text(hjust = 0),
+          plot.caption = element_text(size = 12, face = "bold"),
+          panel.background = element_rect(fill = "#F6F6F6"),
+          panel.grid.major = element_line(size = 0.5, linetype = 'solid', colour = "white"), 
+          panel.grid.minor = element_line(size = 0.25, linetype = 'solid', colour = "white"),
+          plot.title = element_blank(),
+          legend.position = c(0.5, 0.8),
+          legend.text = element_text(size = 20),    
+   legend.title = element_text(size = 20)  # Format du titre de la légende
+    ) +
+    scale_fill_manual(
+      values = c("#b2a3e8", "#FF5733", "#FFFF66"),
+      name = expression("LASSO (" * lambda[oracle] * "), n = 381")
+    )
+  
+TP_1_LPLR_oracle <- nrow(df.genes.oracle[df.genes.oracle$freq == 1 & df.genes.oracle$status == "True genes ", ])
+FD_1_LPLR_oracle <- nrow(df.genes.oracle[df.genes.oracle$freq == 1 & df.genes.oracle$status == "False discoveries ", ])
+nb_selected_LPLR_oracle <- nrow(df.genes.oracle)
+prop_TD_LPLR_oracle <- 100*nrow(df.genes.oracle[df.genes.oracle$status == "True genes ",])/nb_selected_LPLR_oracle
+TP_all_LPLR_oracle <- nrow(df.genes.oracle[df.genes.oracle$status == "True genes ", ])
+
+hist_KOPI_0.2 <- ggplot(data_0.2_KOPI, aes(x = freq, fill = status)) +
+  geom_histogram(binwidth = 0.01, color = "black" ) +
+  coord_cartesian(xlim = c(0, 1)) + 
+  ylim(0, max_bin_count_KOPI_0.2) +
+  labs(title = "Selection proportion of genes selected more than once",
+       x = "Selection frequency",
+       y = "Number of genes") +
+ theme(axis.text.x = element_text(size = 20, face = "bold"),
+        axis.title.x = element_text(size = 24),
+        axis.title.y = element_text(size = 24),
+        axis.text.y = element_text(size = 20, face = "bold"),
+        plot.subtitle = element_text(hjust = 0),
+        plot.caption = element_text(size = 12, face = "bold"),
+        panel.background = element_rect(fill = "#F6F6F6"),
+        panel.grid.major = element_line(size = 0.5, linetype = 'solid', colour = "white"), 
+        panel.grid.minor = element_line(size = 0.25, linetype = 'solid', colour = "white"),
+        plot.title = element_blank(),
+        legend.position = c(0.5, 0.8),
+        legend.text = element_text(size = 20),    
+ legend.title = element_text(size = 20)
+  ) +
+  scale_fill_manual(values = c("#95b0b4", "#FF5733", "#FFFF66"), 
+  name = "KOPI (q = 0.2), n = 113
+  ") # Define colors for different statuses
+
+hist_KOPI_0.2
+
+
+TP_1_KOPI_0.2 <- nrow(data_0.2_KOPI[data_0.2_KOPI$freq == 1 & data_0.2_KOPI$status == "True genes ", ])
+FD_1_KOPI_0.2 <- nrow(data_0.2_KOPI[data_0.2_KOPI$freq == 1 & data_0.2_KOPI$status == "False discoveries ", ])
+nb_selected_KOPI_0.2 <- nrow(data_0.2_KOPI)
+prop_TD_KOPI_0.2 <- 100*nrow(data_0.2_KOPI[data_0.2_KOPI$status == "True genes ",])/nb_selected_KOPI_0.2
+TP_all_KOPI_0.2 <- nrow(data_0.2_KOPI[data_0.2_KOPI$status == "True genes ", ])
+
+
+hist_KOPI_0.5 <- ggplot(data_0.5_KOPI, aes(x = freq, fill = status)) +
+  geom_histogram(binwidth = 0.01, color = "black" ) +
+  coord_cartesian(xlim = c(0, 1)) + 
+  ylim(0, max_bin_count_KOPI_0.5) +
+  labs(title = "Selection proportion of genes selected more than once",
+       x = "Selection frequency",
+       y = "Number of genes") +
+ theme(axis.text.x = element_text(size = 20, face = "bold"),
+        axis.title.x = element_text(size = 24),
+        axis.title.y = element_text(size = 24),
+        axis.text.y = element_text(size = 20, face = "bold"),
+        plot.subtitle = element_text(hjust = 0),
+        plot.caption = element_text(size = 12, face = "bold"),
+        panel.background = element_rect(fill = "#F6F6F6"),
+        panel.grid.major = element_line(size = 0.5, linetype = 'solid', colour = "white"), 
+        panel.grid.minor = element_line(size = 0.25, linetype = 'solid', colour = "white"),
+        plot.title = element_blank(),
+        legend.position = c(0.5, 0.8),
+        legend.text = element_text(size = 20),    
+        legend.title = element_text(size = 20)
+  ) +
+  scale_fill_manual(values = c("#4e686b", "#FF5733", "#FFFF66"), name = "KOPI (q = 0.5), n = 520
+                    ") # Define colors for different statuses
+
+hist_KOPI_0.5
+
+
+TP_1_KOPI_0.5 <- nrow(data_0.5_KOPI[data_0.5_KOPI$freq == 1 & data_0.5_KOPI$status == "True genes ", ])
+FD_1_KOPI_0.5 <- nrow(data_0.5_KOPI[data_0.5_KOPI$freq == 1 & data_0.5_KOPI$status == "False discoveries ", ])
+nb_selected_KOPI_0.5 <- nrow(data_0.5_KOPI)
+prop_TD_KOPI_0.5 <- 100*nrow(data_0.5_KOPI[data_0.5_KOPI$status == "True genes ",])/nb_selected_KOPI_0.5
+TP_all_KOPI_0.5 <- nrow(data_0.5_KOPI[data_0.5_KOPI$status == "True genes ", ])
+
+
+
+
+data_0.2 <- data.frame(freq = prop_selection_0.2_0/100, status = as.factor(true_genes[ !prop_selection_0.2 == 0]))
+
+hist_0.2 <- ggplot(data_0.2, aes(x = freq, fill = status)) +
+  geom_histogram(binwidth = 0.01, color = "black") +
+  coord_cartesian(xlim = c(0, 1)) + 
+  ylim(0, max_bin_count_KO_0.2) +
+  labs(title = "Selection proportion of genes selected more than once",
+       x = "Selection frequency",
+       y = "Number of genes") +
+ theme(axis.text.x = element_text(size = 20, face = "bold"),
+        axis.title.x = element_text(size = 24),
+        axis.title.y = element_text(size = 24),
+        axis.text.y = element_text(size = 20, face = "bold"),
+        plot.subtitle = element_text(hjust = 0),
+        plot.caption = element_text(size = 12, face = "bold"),
+        panel.background = element_rect(fill = "#F6F6F6"),
+        panel.grid.major = element_line(size = 0.5, linetype = 'solid', colour = "white"), 
+        panel.grid.minor = element_line(size = 0.25, linetype = 'solid', colour = "white"),
+        plot.title = element_blank(),
+        legend.position = c(0.5, 0.8),
+        legend.text = element_text(size = 20),    
+        legend.title = element_text(size = 20)
+  ) +
+  scale_fill_manual(values = c("#17becf", "#FF5733", "#FFFF66"), 
+name = "Vanilla KO (q = 0.2), n = 335
+") # Define colors for different statuses
+
+hist_0.2
+
+TP_1_KO_0.2 <- nrow(data_0.2[data_0.2$freq == 1 & data_0.2$status == "True genes ", ])
+FD_1_KO_0.2 <- nrow(data_0.2[data_0.2$freq == 1 & data_0.2$status == "False discoveries ", ])
+nb_selected_KO_0.2 <- nrow(data_0.2)
+prop_TD_KO_0.2 <- 100*nrow(data_0.2[data_0.2$status == "True genes ",])/nb_selected_KO_0.2
+TP_all_KO_0.2 <- nrow(data_0.2[data_0.2$status == "True genes ", ])
+
+data_0.5 <- data.frame(freq = prop_selection_0.5_0/100, status = as.factor(true_genes[ !prop_selection_0.5 == 0]))
+
+hist_0.5 <- ggplot(data_0.5, aes(x = freq, fill = status)) +
+  geom_histogram(binwidth = 0.01, color = "black") +
+  coord_cartesian(xlim = c(0, 1)) + 
+  ylim(0, max_bin_count_KO_0.5) +
+  labs(title = "Selection proportion of genes selected more than once",
+       x = "Selection frequency",
+       y = "Number of genes") +
+ theme(axis.text.x = element_text(size = 20, face = "bold"),
+        axis.title.x = element_text(size = 24),
+        axis.title.y = element_text(size = 24),
+        axis.text.y = element_text(size = 20, face = "bold"),
+        plot.subtitle = element_text(hjust = 0),
+        plot.caption = element_text(size = 12, face = "bold"),
+        panel.background = element_rect(fill = "#F6F6F6"),
+        panel.grid.major = element_line(size = 0.5, linetype = 'solid', colour = "white"), 
+        panel.grid.minor = element_line(size = 0.25, linetype = 'solid', colour = "white"),
+        plot.title = element_blank(),
+        legend.position = c(0.5, 0.8),
+        legend.text = element_text(size = 20),    
+        legend.title = element_text(size = 20)
+  ) +
+  scale_fill_manual(values = c("#008899", "#FF5733", "#FFFF66"), 
+name = " Vanilla KO (q = 0.5), n = 1252
+") 
+
+hist_0.5
+
+TP_1_KO_0.5 <- nrow(data_0.5[data_0.5$freq == 1 & data_0.5$status == "True genes ", ])
+FD_1_KO_0.5 <- nrow(data_0.5[data_0.5$freq == 1 & data_0.5$status == "False discoveries ", ])
+nb_selected_KO_0.5<- nrow(data_0.5)
+prop_TD_KO_0.5 <- 100*nrow(data_0.2[data_0.5$status == "True genes ",])/nb_selected_KO_0.5
+TP_all_KO_0.5 <- nrow(data_0.5[data_0.5$status == "True genes ", ])
+
+
+
+graph_LPLR <- ggarrange(hist.genes, hist.genes.oracle, ncol = 2, labels = c("(a) ", "(b) "), common.legend = FALSE, font.label = list(size = 12)) 
+
+
+graph_KO <- ggarrange(hist_0.2, hist_0.5, ncol = 2, labels = c("(c) ", "(d) "), common.legend = FALSE, font.label = list(size = 12)) 
+
+
+
+graph_KOPI <- ggarrange(hist_KOPI_0.2, hist_KOPI_0.5, ncol = 2, labels = c("(e) ", "(f) "), common.legend = FALSE, font.label = list(size = 12)) 
+
+
+
+
+combined_graph <- ggarrange(graph_LPLR, graph_KO, graph_KOPI,  ncol = 1, labels = NULL)
+
+
+ggsave(file = "/home/julie/Documents/Paper_codes/Paper_graphs/Stability/Figures/Figure_4.png", plot = combined_graph, height = 20, width = 17)
+
+```
+
+```{r Data anlysis}
+
+data_analysis <- replace(data_analysis, data_analysis == -Inf, 0)
+
+mean(data_analysis[data_analysis$method == "LPLR (lambda.min)", 1])
+mean(data_analysis[data_analysis$method == "LPLR (lambda.min)", 2])
+mean(data_analysis[data_analysis$method == "LPLR (lambda.min)", 3])
+
+mean(data_analysis[data_analysis$method == "LPLR (lambda.oracle)", 1])
+mean(data_analysis[data_analysis$method == "LPLR (lambda.oracle)", 2])
+mean(data_analysis[data_analysis$method == "LPLR (lambda.oracle)", 3])
+
+mean(data_analysis[data_analysis$method == "KO 0.2", 1])
+mean(data_analysis[data_analysis$method == "KO 0.2", 2])
+mean(data_analysis[data_analysis$method == "KO 0.2", 3])
+
+mean(data_analysis[data_analysis$method == "KO 0.5", 1])
+mean(data_analysis[data_analysis$method == "KO 0.5", 2])
+mean(data_analysis[data_analysis$method == "KO 0.5", 3])
+
+mean(data_analysis[data_analysis$method == "KOPI 0.2", 1])
+mean(data_analysis[data_analysis$method == "KOPI 0.2", 2])
+mean(data_analysis[data_analysis$method == "KOPI 0.2", 3])
+
+mean(data_analysis[data_analysis$method == "KOPI 0.5", 1])
+mean(data_analysis[data_analysis$method == "KOPI 0.5", 2])
+mean(data_analysis[data_analysis$method == "KOPI 0.5", 3])
+```
+
+
+
+
+
