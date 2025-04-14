@@ -14,11 +14,11 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r load sources and comparison data}
 
-source("/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Stability/Settings.R")
-source("/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Stability/Functions.R")
+source("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Stability/Settings.R")
+source("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Stability/Functions.R")
 
-load("/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Stability/R_files/table.selected_genes_no_cv_Vanilla.R")
-load("/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Stability/R_files/table.selected_genes_no_cv_KOPI.R")
+load("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Stability/R_files/table.selected_genes_no_cv_Vanilla.R")
+load("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Stability/R_files/table.selected_genes_no_cv_KOPI.R")
 ```
 
 

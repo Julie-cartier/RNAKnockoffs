@@ -10,13 +10,13 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r}
-source('/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/Settings.R')
-source('/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/Functions.R')
+source('/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/Settings.R')
+source('/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/Functions.R')
 ```
 
 ```{r}
 
-load('/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/R_files/LPLR_KO_BH_linear_table_perfx10.R')
+load('/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/R_files/LPLR_KO_BH_linear_table_perfx10.R')
 
 ```
 
@@ -33,7 +33,7 @@ df_done_synth_linear = df_perf_maker(table.perf.linear.LPLRKO, list_target_fdr, 
 
 ```
 
-# Is the FDP control ?
+# Is the FDP controlled ?
 
 ```{r  Curves in the Linear setting }
 df_fdp_fdr_tot <- df_done_synth_linear[[2]] 
@@ -129,14 +129,15 @@ df_done_boxplot_wilcoxon = df_perf_maker_boxplot(table.perf.linear.wilcoxon, lis
 df_boxplot <- rbind(df_done_boxplot_LPLRKO, df_done_boxplot_wilcoxon)
 
 df_aggregated <- summarise(group_by(df_boxplot, FDP_levels, KO), Count = n(), .groups = "drop") # get the count of points
+df_aggregated <- mutate(group_by(df_aggregated, KO), Normalized_Count = Count*100 / sum(Count)) # Normalized count by the length of parameters sequence (list_target_fdr, list_lambda, ...)
 df_means <- summarise(group_by(df_boxplot, FDP_levels, KO), Mean = mean(Power), .groups = "drop") # get the mean power over an FDP interval
 
 # Create boxplots which give point density for each methods
 
-count_plot <- ggplot(df_aggregated, aes(x = FDP_levels, y = Count, fill = KO, color = KO)) +
+count_plot <- ggplot(df_aggregated, aes(x = FDP_levels, y = Normalized_Count, fill = KO, color = KO)) +
   geom_bar(stat = "identity", position = position_dodge(0.8), width = 0.6, alpha = 0.8) +
-  ylim(0, 3900) +
-  geom_text(aes(label = Count), # text/labels adjustments
+  ylim(0, 95) +
+  geom_text(aes(label = round(Normalized_Count, 1)), # text/labels adjustments
             position = position_dodge(0.8), 
             vjust = -0.5,  
             size = 5.,     
@@ -147,7 +148,7 @@ count_plot <- ggplot(df_aggregated, aes(x = FDP_levels, y = Count, fill = KO, co
   scale_color_manual(values = c("#17becf", "#7c6fb0", "#a28823", "#993300")) +
   labs(
     x = NULL,  # Remove x-axis label to align with median plot
-    y = "Count",
+    y = "Normalized count",
     fill = "Methods",
     shape = "Methods",  # Shape legend for median plot
     color = "Methods"   # Color legend for median plot
@@ -157,7 +158,7 @@ count_plot <- ggplot(df_aggregated, aes(x = FDP_levels, y = Count, fill = KO, co
     axis.title.x = element_text(size = 22),
     axis.title.y = element_text(size = 22, vjust = 2),
     axis.text.y = element_text(size = 20, face = "bold"),
-    legend.position = c(0.96, 0.85),  # Show legend at the top for median plot
+    legend.position = c(0.94, 0.6),  
     legend.title = element_blank(),
     legend.text = element_text(size = 24),
     legend.justification = c("right", "center"),
@@ -192,7 +193,7 @@ mean_comp <- ggplot(df_aggregated, aes(x = FDP_levels, y = Power, size = Count, 
     axis.title.x = element_text(size = 22),
     axis.title.y = element_text(size = 22),
     axis.text.y = element_text(size = 20, face = "bold"),
-    legend.position = c(0.45, 0.9),  # Show legend at the top for median plot
+    legend.position = c(0.45, 0.9),  
     legend.title = element_blank(),
     legend.text = element_text(size = 24),
     legend.justification = c("right", "center"),
@@ -223,7 +224,7 @@ ggsave(file = "/home/julie/Documents/Paper_codes/Paper_graphs/Wilcoxon_vs_KO_vs_
 # table which summarizes the performances 
 
 ```{r}
-load('/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/R_files/KOPI_KO_BH_add_linear_table_perfx10.R')
+load('/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/R_files/KOPI_KO_BH_add_linear_table_perfx10.R')
 ```
 
 

@@ -12,8 +12,8 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r load sources}
-source("/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Statistics_comparison/Settings.R")
-source("/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Statistics_comparison/Functions.R")
+source("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Statistics_comparison/Settings.R")
+source("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Statistics_comparison/Functions.R")
 ```
 
 
@@ -23,7 +23,7 @@ source("/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Statistics_comparis
 
 # load experiment results
 
-load("/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Statistics_comparison/R_files/compStat_trueX_fakeY_tables_perf.R")
+load("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Statistics_comparison/R_files/compStat_trueX_fakeY_tables_perf.R")
 
 # create data frames for graphical representation
 
@@ -117,7 +117,7 @@ graph_power_fdp <- ggplot(df_power_fdp, aes(x=fdp, y=power, color = KO)) +
    #ylim(c(-0.15, 1.20)) + 
    # geom_pointrange( aes(ymin = power-std, ymax = power+std),linewidth = 1)+
    geom_point(aes(shape = KO), size = 4) +
-   scale_shape_manual(values = c(7, 15, 17, 18)) +  # Adjust the shape values according to your preference
+   scale_shape_manual(values = c(7, 15, 17, 18)) +  
    geom_ribbon(aes(ymin = power - std, ymax = power + std, group = KO, fill = KO), alpha = 0.15, colour = NA) +
    geom_line(data = subset(df_power_fdp, KO == 'LASSO'), aes(group = KO))+
    #geom_line(aes(group = KO), linewidth = 1.5)+
@@ -250,7 +250,7 @@ graph_power_fdp <- ggplot(df_power_fdp, aes(x=fdp, y=power, color = KO)) +
    xlab("FDP") + 
    ylim(c(-0.25, 1.22)) + 
    geom_point(aes(shape = KO), size = 4) +
-   scale_shape_manual(values = c(7, 15, 17, 18)) +  # Adjust the shape values according to your preference
+   scale_shape_manual(values = c(7, 15, 17, 18)) + 
    geom_ribbon(aes(ymin = power - std, ymax = power + std, group = KO, fill = KO), alpha = 0.15, colour = NA) +
    geom_line(data = subset(df_power_fdp, KO == 'LASSO'), aes(group = KO))+
    labs(title = "Power vs FDP, k = 10, X from X real") +
@@ -526,7 +526,7 @@ graph_power_fdp <- ggplot(df_power_fdp, aes(x=fdp, y=power, color = KO)) +
    xlab("FDP") + 
    ylim(c(-0.25, 1.22)) + 
    geom_point(aes(shape = KO), size = 4) +
-   scale_shape_manual(values = c(7, 15, 17, 18)) +  # Adjust the shape values according to your preference
+   scale_shape_manual(values = c(7, 15, 17, 18)) + 
    geom_ribbon(aes(ymin = power - std, ymax = power + std, group = KO, fill = KO), alpha = 0.15, colour = NA) +
    geom_line(data = subset(df_power_fdp, KO == 'LASSO'), aes(group = KO))+
    labs(title = "Power vs FDP, k = 10, X from X real") +

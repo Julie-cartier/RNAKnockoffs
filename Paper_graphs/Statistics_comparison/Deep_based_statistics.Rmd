@@ -10,12 +10,12 @@ knitr::opts_chunk$set(echo = TRUE)
 In this document, we make scripts to generate plots for Deep learning-based statistics comparison for the CRUKPAP (linear/interaction) cohort.
 
 ```{r load sources}
-source("/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Statistics_comparison/Settings.R")
-source("/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Statistics_comparison/Functions.R")
+source("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Statistics_comparison/Settings.R")
+source("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Statistics_comparison/Functions.R")
 ```
 
 ```{r load files (experiments results)}
-load("/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Statistics_comparison/R_files/DeepStat_trueX_fakeY_tables_perfx10.R")
+load("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Statistics_comparison/R_files/DeepStat_trueX_fakeY_tables_perfx10.R")
 ```
 
 
@@ -224,7 +224,7 @@ graph_power_fdp <- ggplot(df_power_fdp, aes(x=fdp, y=power, color = KO)) +
    ylim(c(-0.25, 1.22)) + 
    # geom_pointrange( aes(ymin = power-std, ymax = power+std),linewidth = 1)+
    geom_point(aes(shape = KO), size = 3) +
-   scale_shape_manual(values = c(19, 0, 4, 17, 18)) +  # Adjust the shape values according to your preference
+   scale_shape_manual(values = c(19, 0, 4, 17, 18)) +  
    geom_ribbon(aes(ymin = power - std,ymax = power + std, group = KO, fill = KO), alpha = 0.15, colour = NA) +
    geom_line(data = subset(df_power_fdp, KO == 'LASSO'), aes(group = KO))+
    #geom_line(aes(group = KO), linewidth = 1.5)+

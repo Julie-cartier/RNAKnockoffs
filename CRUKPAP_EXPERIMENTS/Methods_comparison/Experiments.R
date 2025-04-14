@@ -1,5 +1,5 @@
-source("/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Methods_comparison/Settings.R")
-source("/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Methods_comparison/Functions.R")
+source("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Methods_comparison/Settings.R")
+source("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Methods_comparison/Functions.R")
 
 #use python functions 
 require(reticulate)
@@ -53,7 +53,7 @@ toc()
 
 table.perf.linear.MRC <- table.perf.linear.MRC[, -1]
 
-save(table.perf.linear.MRC, file = "/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Methods_comparison/R_files/MRC_table_perfx10.R")
+save(table.perf.linear.MRC, file = "/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Methods_comparison/R_files/MRC_table_perfx10.R")
 
 ######################################################################################################################################
 ######################################################################################################################################
@@ -77,7 +77,7 @@ toc()
 
 table.perf.linear.cov <- table.perf.linear.cov[, -1]
 
-save(table.perf.linear.cov, file = "/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Methods_comparison/R_files/table_perf_extx10.R")
+save(table.perf.linear.cov, file = "/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Methods_comparison/R_files/table_perf_extx10.R")
 
 
 ######################################################################################################################################

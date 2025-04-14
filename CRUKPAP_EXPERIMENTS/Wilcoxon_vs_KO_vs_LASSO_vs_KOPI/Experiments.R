@@ -1,5 +1,5 @@
-source('/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/Settings.R')
-source('/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/Functions.R')
+source('/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/Settings.R')
+source('/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/Functions.R')
 
 
 # Set the Python environment
@@ -11,7 +11,7 @@ sklearn <- import("sklearn", convert = FALSE)
 numpy <- import("numpy", convert = FALSE)
 
 # Source the home-made Python file
-source_python("/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/Functions.py")
+source_python("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/Functions.py")
 
 
 
@@ -58,13 +58,13 @@ table.perf.linear.wilcoxon <- table.perf.linear.wilcoxon[, -1]
 rownames(table.perf.linear.LPLR.lambda.min) <- c("lambda.min", "FDP", "Power")
 
 
-save(list.beta, table.perf.linear.LPLRKO, table.perf.linear.wilcoxon, table.perf.linear.LPLR.lambda.min, file = "/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/R_files/LPLR_KO_BH_linear_table_perfx10.R")
+save(list.beta, table.perf.linear.LPLRKO, table.perf.linear.wilcoxon, table.perf.linear.LPLR.lambda.min, file = "/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/R_files/LPLR_KO_BH_linear_table_perfx10.R")
 
 ###################### Additional comparison (KOPI and oracle LASSO) ###########################################
 
 # load data to get the list of beta for further comparison
 
-load("/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/R_files/LPLR_KO_BH_linear_table_perfx10.R")
+load("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/R_files/LPLR_KO_BH_linear_table_perfx10.R")
 
 ## Get the results with KOPI and The oracle lambda ##
 
@@ -94,7 +94,7 @@ table.perf.linear.KOPI <- table.perf.linear.KOPI[, -1]
 rownames(table.perf.linear.LPLR.lambda.oracle) <- c("lambda.oracle", "FDP", "Power")
 
 
-save(table.perf.linear.KOPI, table.perf.linear.LPLR.lambda.oracle, file = "/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/R_files/KOPI_KO_BH_add_linear_table_perfx10.R")
+save(table.perf.linear.KOPI, table.perf.linear.LPLR.lambda.oracle, file = "/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/R_files/KOPI_KO_BH_add_linear_table_perfx10.R")
 
 
 
@@ -132,7 +132,7 @@ toc()
 table.perf.linear.KOPIKO <- table.perf.linear.KOPIKO[, -1]
 
 
-save(list.beta, table.perf.linear.KOPIKO, file = "/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/R_files/KOPI_KO_linear_table_perfx10.R")
+save(list.beta, table.perf.linear.KOPIKO, file = "/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/R_files/KOPI_KO_linear_table_perfx10.R")
 
 
 

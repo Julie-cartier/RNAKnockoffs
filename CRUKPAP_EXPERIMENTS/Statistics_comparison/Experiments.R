@@ -1,7 +1,7 @@
-source("/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Statistics_comparison/Settings.R")
-source("/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Statistics_comparison/Functions.R")
+source("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Statistics_comparison/Settings.R")
+source("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Statistics_comparison/Functions.R")
 
-load("/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Statistics_comparison/R_files/list_beta_interaction.R")
+load("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Statistics_comparison/R_files/list_beta_interaction.R")
 
 ### Experiment for Tree_based_statistics files 
 
@@ -48,7 +48,7 @@ toc()
 table.perf.nlinear.LASSO <- table.perf.nlinear.LASSO[, -1]
 
 
-save(table.perf.linear.LASSO, table.perf.nlinear.LASSO, list.beta, file = "/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Statistics_comparison/R_files/LASSOStat_trueX_fakeY_tables_perfx10.R")
+save(table.perf.linear.LASSO, table.perf.nlinear.LASSO, list.beta, file = "/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Statistics_comparison/R_files/LASSOStat_trueX_fakeY_tables_perfx10.R")
 
 ######################################################################################################################################
 ######################################################################################################################################
@@ -91,7 +91,7 @@ toc()
 
 table.perf.nlinear.RF.synth <- table.perf.nlinear.RF.synth[, -1]
 
-save(table.perf.linear.RF.synth, table.perf.nlinear.RF.synth, list.beta, file = "/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Statistics_comparison/R_files/TreeSynthStat_trueX_fakeY_tables_perfx10.R")
+save(table.perf.linear.RF.synth, table.perf.nlinear.RF.synth, list.beta, file = "/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Statistics_comparison/R_files/TreeSynthStat_trueX_fakeY_tables_perfx10.R")
 
 
 ############################ X_CRUKPAP, linear/interaction y,  Deep-based statistics comparison ######################################
@@ -133,7 +133,7 @@ toc()
 table.perf.nlinear.Deep <- table.perf.nlinear.Deep[, -1]
 
 
-save(table.perf.linear.Deep, table.perf.nlinear.Deep, list.beta, file = "/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Statistics_comparison/R_files/DeepStat_trueX_fakeY_tables_perfx10.R")
+save(table.perf.linear.Deep, table.perf.nlinear.Deep, list.beta, file = "/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Statistics_comparison/R_files/DeepStat_trueX_fakeY_tables_perfx10.R")
 
 
 ############################ X_CRUKPAP, linear/interaction y , Statistics comparison #################################################
@@ -176,7 +176,7 @@ toc()
 table.perf.nlinear.comp <- table.perf.nlinear.comp[, -1]
 
 
-save(table.perf.linear.comp, table.perf.nlinear.comp, list.beta, file = "/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Statistics_comparison/R_files/compStat_trueX_fakeY_tables_perf.R")
+save(table.perf.linear.comp, table.perf.nlinear.comp, list.beta, file = "/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Statistics_comparison/R_files/compStat_trueX_fakeY_tables_perf.R")
 
 
 ######################################################################################################################################

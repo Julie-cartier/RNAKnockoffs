@@ -12,7 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 # get data matrices
 source("/home/julie/Documents/Paper_codes/New_cohorts_EXPERIMENTS/AEGIS/Settings.R")  # get X_AEGIS_exp and X_CRUKPAP
 load("/home/julie/Documents/Paper_codes/Data/BC/X_BC_exp.R") # get X_BC_exp
-source("/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Statistics_comparison/Functions.R") # for graphical functions
+source("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Statistics_comparison/Functions.R") # for graphical functions
 ```
 
 ```{r Additional functions}
@@ -56,7 +56,7 @@ rownames(df_power_mean_0_0.3) <- c("CRUKPAP", "AEGIS", "BC")
 
 # CRUKPAP
 
-load("/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Statistics_comparison/R_files/compStat_trueX_fakeY_tables_perf.R")
+load("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Statistics_comparison/R_files/compStat_trueX_fakeY_tables_perf.R")
 
 df_LSCIP_CRUKPAP <- table.perf.linear.comp[ ,grep("LCD", names(table.perf.linear.comp))]
 df_power_mean_0_0.3[1, ] <- sapply(indices_maker(df_LSCIP_CRUKPAP, 0, 0.3)[[1]], length)
@@ -310,7 +310,7 @@ power_cor_maker <- function(df, FDP_min, FDP_max, X_sample, list_beta, block_siz
 
 ```{r plot + Regression model}
 
-load("/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Statistics_comparison/R_files/compStat_trueX_fakeY_tables_perf.R")
+load("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Statistics_comparison/R_files/compStat_trueX_fakeY_tables_perf.R")
 
 df_LSCIP_CRUKPAP <- table.perf.linear.comp[ ,grep("LCD", names(table.perf.linear.comp))]
 

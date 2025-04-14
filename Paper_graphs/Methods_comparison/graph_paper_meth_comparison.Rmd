@@ -10,8 +10,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 ```{r load souces}
-source("/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Methods_comparison/Settings.R")
-source("/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Methods_comparison/Functions.R")
+source("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Methods_comparison/Settings.R")
+source("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Methods_comparison/Functions.R")
 
 ```
 
@@ -21,7 +21,7 @@ source("/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Methods_comparison/
 
 #load table
 
-load("/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Methods_comparison/R_files/table_perfx10.R") # tere are 100 iterations (not 10)
+load("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Methods_comparison/R_files/table_perfx10.R") # tere are 100 iterations (not 10)
 
 # create data frames
 
@@ -112,7 +112,7 @@ graph_power_fdp <- ggplot(df_power_fdp, aes(x=fdp, y=power, color = KO)) +
    #ylim(c(-0.15, 1.20)) + 
    # geom_pointrange( aes(ymin = power-std, ymax = power+std),linewidth = 1)+
    geom_point(aes(shape = KO), size = 4) +
-   scale_shape_manual(values = c(7, 20, 15, 17, 18)) +  # Adjust the shape values according to your preference
+   scale_shape_manual(values = c(7, 20, 15, 17, 18)) +  
    geom_ribbon(aes(ymin = power - std, ymax = power + std, group = KO, fill = KO), alpha = 0.15, colour = NA) +
    geom_line(data = subset(df_power_fdp, KO == 'LASSO'), aes(group = KO))+
    #geom_line(aes(group = KO), linewidth = 1.5)+
@@ -166,7 +166,7 @@ ggsave(file = "/home/julie/Documents/Paper_codes/Paper_graphs/Methods_comparison
 ```{r Comparison of the performance of the two MRC methods}
 # load data files
 
-load("/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Methods_comparison/R_files/MRC_table_perfx10.R")
+load("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Methods_comparison/R_files/MRC_table_perfx10.R")
 
 #create data frames 
 df_done_MRC = df_perf_maker(table.perf.linear.MRC, list_target_fdr, KO_meth_names = c("MVR", "ME"), n.rep = 10)
@@ -258,7 +258,7 @@ graph_power_fdp <- ggplot(df_power_fdp, aes(x=fdp, y=power, color = KO)) +
    #ylim(c(-0.15, 1.20)) + 
    # geom_pointrange( aes(ymin = power-std, ymax = power+std),linewidth = 1)+
    geom_point(aes(shape = KO), size = 4) +
-   scale_shape_manual(values = c( 20, 15, 17, 18)) +  # Adjust the shape values according to your preference
+   scale_shape_manual(values = c( 20, 15, 17, 18)) +  
    geom_ribbon(aes(ymin = power - std, ymax = power + std, group = KO, fill = KO), alpha = 0.15, colour = NA) +
    geom_line(data = subset(df_power_fdp, KO == 'LASSO'), aes(group = KO))+
    #geom_line(aes(group = KO), linewidth = 1.5)+
@@ -402,7 +402,7 @@ graph_power_fdp <- ggplot(df_power_fdp, aes(x=fdp, y=power, color = KO)) +
    #ylim(c(-0.15, 1.20)) + 
    # geom_pointrange( aes(ymin = power-std, ymax = power+std),linewidth = 1)+
    geom_point(aes(shape = KO), size = 4) +
-   scale_shape_manual(values = c(7, 20, 15, 17, 18)) +  # Adjust the shape values according to your preference
+   scale_shape_manual(values = c(7, 20, 15, 17, 18)) +  
    geom_ribbon(aes(ymin = power - std, ymax = power + std, group = KO, fill = KO), alpha = 0.15, colour = NA) +
    geom_line(data = subset(df_power_fdp, KO == 'LASSO'), aes(group = KO))+
    #geom_line(aes(group = KO), linewidth = 1.5)+
@@ -548,7 +548,7 @@ graph_power_fdp <- ggplot(df_power_fdp, aes(x=fdp, y=power, color = KO)) +
    #ylim(c(-0.15, 1.20)) + 
    # geom_pointrange( aes(ymin = power-std, ymax = power+std),linewidth = 1)+
    geom_point(aes(shape = KO), size = 4) +
-   scale_shape_manual(values = c(7, 20, 15, 17, 18)) +  # Adjust the shape values according to your preference
+   scale_shape_manual(values = c(7, 20, 15, 17, 18)) + 
    geom_ribbon(aes(ymin = power - std, ymax = power + std, group = KO, fill = KO), alpha = 0.15, colour = NA) +
    geom_line(data = subset(df_power_fdp, KO == 'LASSO'), aes(group = KO))+
    #geom_line(aes(group = KO), linewidth = 1.5)+

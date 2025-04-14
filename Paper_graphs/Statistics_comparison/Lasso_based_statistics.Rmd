@@ -6,12 +6,12 @@ output: html_document
 In this document, we make scripts to generate plots for lasso-based statistics comparison for the CRUKPAP (linear/interaction) cohort.
 
 ```{r load sources}
-source("/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Statistics_comparison/Settings.R")
-source("/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Statistics_comparison/Functions.R")
+source("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Statistics_comparison/Settings.R")
+source("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Statistics_comparison/Functions.R")
 ```
 
 ```{r load files (experiments results)}
-load("/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Statistics_comparison/R_files/LASSOStat_trueX_fakeY_tables_perfx10.R")
+load("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Statistics_comparison/R_files/LASSOStat_trueX_fakeY_tables_perfx10.R")
 ```
 
 ```{r Statistics (LASSO) comparison in the linear setting, CRUKPAP cohort}

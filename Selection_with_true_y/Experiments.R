@@ -14,7 +14,7 @@ knockpy <- import("knockpy", convert = FALSE)
 sklearn <- import("sklearn", convert = FALSE)
 numpy <- import("numpy", convert = FALSE)
 
-source_python("/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/Functions.py")
+source_python("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/Functions.py")
 
 
 ## get data for the BC cohort ##

@@ -14,14 +14,14 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r}
-source("/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Methods_comparison/Settings.R")
-source("/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Methods_comparison/Functions.R")
+source("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Methods_comparison/Settings.R")
+source("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Methods_comparison/Functions.R")
 
 ```
 
 ```{r}
 
-load("/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Methods_comparison/R_files/table_perf_extx10.R")
+load("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Methods_comparison/R_files/table_perf_extx10.R")
 
 ```
 

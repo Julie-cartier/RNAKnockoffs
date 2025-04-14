@@ -1,5 +1,5 @@
-source("/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Stability/Settings.R")
-source("/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Stability/Functions.R")
+source("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Stability/Settings.R")
+source("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Stability/Functions.R")
 
 library(reticulate)
 
@@ -12,14 +12,14 @@ sklearn <- import("sklearn", convert = FALSE)
 numpy <- import("numpy", convert = FALSE)
 
 # Source the home-made Python file to perform KOPI
-source_python("/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/Functions.py")
+source_python("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/Functions.py")
 
 
 ### !!! DO not forget to rerun the List_indices_maker.R script if the script in the cluster has been launched again !!! 
 
 # Get CV indices for the comparison
 
-load("/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Stability/R_files/list_cv_indices.R")
+load("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Stability/R_files/list_cv_indices.R")
 
 
 
@@ -55,7 +55,7 @@ for (rep in 1:y.rep){# Repeat the experiment 10 times with different outcome y
   table.selected.genes.LPLR <- table.selected_genes.perf.LPLR[3:751,]
   rownames(table.selected.genes.LPLR) <- colnames(X_real)
   
-  save(y, beta, table.selected.genes.LPLR, table.aucs.LPLR, file = str_glue("/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Stability/R_files/y_rep/table_selected_genes_LPLR_",rep,".R"))
+  save(y, beta, table.selected.genes.LPLR, table.aucs.LPLR, file = str_glue("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Stability/R_files/y_rep/table_selected_genes_LPLR_",rep,".R"))
   
   
   # LPLR, oracle lambda 
@@ -73,7 +73,7 @@ for (rep in 1:y.rep){# Repeat the experiment 10 times with different outcome y
   table.selected.genes.LPLR.oracle <- table.selected_genes.perf.LPLR.oracle[5:753,]
   rownames(table.selected.genes.LPLR.oracle) <- c(colnames(X_real))
   
-  save(y, beta, table.selected.genes.LPLR.oracle, table.aucs.LPLR.oracle, file = str_glue("/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Stability/R_files/y_rep/table_selected_genes_LPLR_oracle_",rep,".R"))
+  save(y, beta, table.selected.genes.LPLR.oracle, table.aucs.LPLR.oracle, file = str_glue("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Stability/R_files/y_rep/table_selected_genes_LPLR_oracle_",rep,".R"))
   
   
   # KO + KOPI
@@ -132,8 +132,8 @@ for (rep in 1:y.rep){# Repeat the experiment 10 times with different outcome y
   table.selected_genes.Vanilla_0.3 <- table.selected_genes.Vanilla_0.3[,-1]
   table.selected_genes.Vanilla_0.5 <- table.selected_genes.Vanilla_0.5[,-1]
 
-  save(beta, y, table.selected_genes.Vanilla_0.1, table.selected_genes.Vanilla_0.2, table.selected_genes.Vanilla_0.3, table.selected_genes.Vanilla_0.5, file = str_glue("/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Stability/R_files/y_rep/table.selected_genes_cv_Vanilla_",rep,".R"))
-  save(beta, y, table.selected_genes.KOPI_0.1, table.selected_genes.KOPI_0.2, table.selected_genes.KOPI_0.3, table.selected_genes.KOPI_0.5, file = str_glue("/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Stability/R_files/y_rep/table.selected_genes_cv_KOPI_",rep,".R"))
+  save(beta, y, table.selected_genes.Vanilla_0.1, table.selected_genes.Vanilla_0.2, table.selected_genes.Vanilla_0.3, table.selected_genes.Vanilla_0.5, file = str_glue("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Stability/R_files/y_rep/table.selected_genes_cv_Vanilla_",rep,".R"))
+  save(beta, y, table.selected_genes.KOPI_0.1, table.selected_genes.KOPI_0.2, table.selected_genes.KOPI_0.3, table.selected_genes.KOPI_0.5, file = str_glue("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Stability/R_files/y_rep/table.selected_genes_cv_KOPI_",rep,".R"))
   
 }
 
@@ -164,7 +164,7 @@ table.selected_genes.KOPI_0.5 <- data.frame(rep(NA, ncol(X_real)))
 
 for (i in 1:100){
   
-  # load KO matrices from the bank of KO matrices generated with the KO_banks_cluster_script.R (/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/)
+  # load KO matrices from the bank of KO matrices generated with the KO_banks_cluster_script.R (/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/)
   load(str_glue("/media/julie/T5 EVO/Data_cluster/KO_bank_under_sets/X_k_",i,"_100.R"))
   
   print(i)
@@ -197,7 +197,7 @@ table.selected_genes.Vanilla_0.3<- table.selected_genes.Vanilla_0.3[,-1]
 table.selected_genes.Vanilla_0.5 <- table.selected_genes.Vanilla_0.5[,-1]
 
 
-save(beta, y, table.selected_genes.Vanilla_0.1, table.selected_genes.Vanilla_0.2, table.selected_genes.Vanilla_0.3, table.selected_genes.Vanilla_0.5, file = "/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Stability/R_files/table.selected_genes_no_cv_Vanilla.R")
-save(beta, y, table.selected_genes.KOPI_0.1, table.selected_genes.KOPI_0.2, table.selected_genes.KOPI_0.3, table.selected_genes.KOPI_0.5, file = "/home/julie/Documents/Paper_codes/CUKPAP_EXPERIMENTS/Stability/R_files/table.selected_genes_no_cv_KOPI.R")
+save(beta, y, table.selected_genes.Vanilla_0.1, table.selected_genes.Vanilla_0.2, table.selected_genes.Vanilla_0.3, table.selected_genes.Vanilla_0.5, file = "/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Stability/R_files/table.selected_genes_no_cv_Vanilla.R")
+save(beta, y, table.selected_genes.KOPI_0.1, table.selected_genes.KOPI_0.2, table.selected_genes.KOPI_0.3, table.selected_genes.KOPI_0.5, file = "/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Stability/R_files/table.selected_genes_no_cv_KOPI.R")
 
 
