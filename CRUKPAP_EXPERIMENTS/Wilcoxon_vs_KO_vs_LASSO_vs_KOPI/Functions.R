@@ -195,8 +195,15 @@ Knockoff_LPLR <- function(X, X_k = NULL, y = NULL, beta = NULL, scale = NULL, k 
   }
   
   # LCD statistics
+  if (method == "linear"){
+    W_KO <- stat.glmnet_coefdiff(X, X_k, y, nfolds=10, family="binomial")
+  }
+  else if(method == "interaction"){
+    # GINI
+    y.factor <- as.factor(y)
+    W_KO <- stat.random_forest(X, X_k, y.factor)
+  }
   
-  W_LCD <- stat.glmnet_coefdiff(X, X_k, y, nfolds=10, family="binomial")
   
   # Select features
   
@@ -207,8 +214,8 @@ Knockoff_LPLR <- function(X, X_k = NULL, y = NULL, beta = NULL, scale = NULL, k 
     
     # KO
     
-    thres_LCD <- knockoff.threshold(W_LCD, fdr=target_fdr, offset=1) 
-    selected_LCD <- which(W_LCD >= thres_LCD)
+    thres_KO <- knockoff.threshold(W_KO, fdr=target_fdr, offset=1) 
+    selected_KO <- which(W_KO >= thres_KO)
     
     #LASSO
     
@@ -220,13 +227,17 @@ Knockoff_LPLR <- function(X, X_k = NULL, y = NULL, beta = NULL, scale = NULL, k 
     predicted_y[predicted_y>0.5]  <- 1
     predicted_y[predicted_y<=0.5] <- 0
     
-    mat.features[1, (1+2*(i-1)):(2+2*(i-1))] <- c(fdp(selected_LCD, beta), fdp(selected_lasso, beta))
-    mat.features[2, (1+2*(i-1)):(2+2*(i-1))] <- c(power(selected_LCD, beta), power(selected_lasso, beta))
-    mat.features[selected_LCD + 2, 1+2*(i-1)] = 1
+    mat.features[1, (1+2*(i-1)):(2+2*(i-1))] <- c(fdp(selected_KO, beta), fdp(selected_lasso, beta))
+    mat.features[2, (1+2*(i-1)):(2+2*(i-1))] <- c(power(selected_KO, beta), power(selected_lasso, beta))
+    mat.features[selected_KO + 2, 1+2*(i-1)] = 1
     mat.features[selected_lasso + 2, 2+2*(i-1)] = 1
     
-    colnames(mat.features)[c(1+2*(i-1), 2+2*(i-1)) ] <- c(str_glue("LCD", target_fdr), str_glue("lasso_", lambda))
-    
+    if (method == "linear"){
+      colnames(mat.features)[c(1+2*(i-1), 2+2*(i-1)) ] <- c(str_glue("LCD", target_fdr), str_glue("lasso_", lambda))
+    }
+    else if (method == "interaction"){
+      colnames(mat.features)[c(1+2*(i-1), 2+2*(i-1)) ] <- c(str_glue("RF", target_fdr), str_glue("lasso_", lambda))
+    }
   }
   
   rownames(mat.features) = c("FDP", "power", c(1:p))

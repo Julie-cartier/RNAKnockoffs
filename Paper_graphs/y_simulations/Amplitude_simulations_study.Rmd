@@ -1,0 +1,350 @@
+---
+title: "Amplitude_simulation_study"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r Packages}
+library(readr)
+library(stringr)
+library(ggplot2)
+library(viridis)
+library(ggpubr)
+```
+
+```{r Functions}
+beta.sample <- function(p, k, amplitude){ # p: number of features, k: number of non null features 
+  nonzero = sample(p, k)
+  beta = rep(0,p)
+  beta[nonzero] = amplitude * sample(c(1,-1), k, replace = T)
+  return(beta)
+}
+
+y_prob.sample <- function(X, beta, method, scale = FALSE, threshold = 0.5){     ### method : linear, N-linear, Interaction # amplitude
+  n = nrow(X)
+  p = ncol(X)
+  if (scale == TRUE){X = scale(X)}
+  
+  if (method == "linear"){
+    y_prob = 1 / (1 + exp(- (X%*%beta)))
+    y = 1*(y_prob>=threshold)
+  }
+  else if (method == "N-linear"){
+    y_prob = 1 / (1 + exp(-X**3%*%beta/2))
+    y = 1*(y_prob>=threshold)
+  }
+  else if (method == "interaction"){
+    beta.ind = which(beta!=0)
+    X.part = X[, sample(beta.ind)]
+    k = length(beta.ind)
+    amplitude = abs(beta[beta.ind][1])
+    
+    choice <- sample(c(1, -1), 1)
+    
+    # Define the vector based on the random choice
+    if (choice == 1) {
+      vector <- c(rep(1, round(k/4)), rep(-1, k/2-round(k/4)))
+    } else {
+      vector <- c(rep(1, k/2-round(k/4)), rep(-1, round(k/4)))
+    }
+    
+    # Shuffle the vector
+    shuffled.vector <- sample(vector)
+    coeff = amplitude * shuffled.vector
+    
+    int.product = 0
+    
+    for (j in 1:(k/2)){
+      int.product = int.product + coeff[j]*X.part[,2*j-1]*X.part[,2*j]
+    }
+    y_prob = 1 / (1 + exp(- int.product ))
+    y = 1*(y_prob>=threshold)
+  }
+  if (sum(y)<=(n*0.45) | sum(y)>(n*0.55)){
+    warning(str_glue("unbalanced classes : proportion of 1 : ",sum(y)/n))
+  }
+  return(y_prob)
+}
+
+```
+  
+```{r data}
+
+RNA.data <- read.table(file = "/home/julie/Documents/Paper_codes/Data/CRUKPAP/dat_vst_NS_no_Inel_selected.txt", head = T) 
+
+X_CRUKPAP = as.matrix(RNA.data)
+
+RNA_data_perez_tot <- read.table(file = "/home/julie/Bureau/Data/perezRodgers2017/perez2017_exprmat_geneID_filtered_and_ENS_converted.tsv",head = TRUE, sep = "\t") 
+
+X_AEGIS = t(as.matrix(RNA_data_perez_tot))
+
+X_AEGIS_exp <- X_AEGIS[,intersect(colnames(X_CRUKPAP), colnames(X_AEGIS))]
+
+load("/home/julie/Documents/Paper_codes/Data/BC/X_BC_exp.R")
+
+```
+
+# In the linear setting
+
+## Choice of the amplitude
+
+```{r Density for different amplitude parameters}
+
+generate_y_prob <- function(amplitude) {
+  lapply(1:10, function(i) {
+    beta <- beta.sample(ncol(X_CRUKPAP), k = 10, a = amplitude)
+    y_prob.sample(scale(X_CRUKPAP), beta, "linear")
+  })
+}
+
+vec.amplitude <- c(0.1, 1, 10, 100)
+
+vec_y_prob_list <- lapply(vec.amplitude, generate_y_prob)
+
+df_a <- data.frame(p = unlist(vec_y_prob_list),color = rep(rep(vec.amplitude, each = 10), each =369))
+df_a$color <- as.factor(df_a$color)
+
+
+density_y_a <- ggplot(df_a, aes(x = p, color = color)) +
+  geom_density(size = 1) +  # Removed alpha and fill (not needed for line plots)
+  geom_vline(xintercept = 0.5, linetype = "dashed", color = "black", linewidth = 1) +  
+  scale_color_viridis_d(option = "plasma", name = "Amplitude (a): ") +  
+  labs(title = "Density distribution by amplitude",
+       x = "",
+       y = "p density (CRUKPAP)") +
+  theme(
+    axis.text.x = element_text(size = 24, face = "bold"),
+    axis.title.x = element_text(size = 26),
+    axis.title.y = element_text(size = 28),
+    axis.text.y = element_text(size = 24, face = "bold"),
+    plot.subtitle = element_text(size = 28, face = "bold"),
+    legend.title = element_text(size = 28),
+    legend.text = element_text(size = 24),
+    legend.justification = c("right", "center"),
+    legend.position = c(0.95, 0.8),  
+    plot.title = element_blank(),
+    panel.background = element_rect(fill = "#F6F6F6"),
+    panel.grid.major = element_line(linewidth = 0.5, linetype = 'solid', colour = "white"), 
+    panel.grid.minor = element_line(linewidth = 0.25, linetype = 'solid', colour = "white"),
+    plot.margin = unit(c(0.6, 0.2, 0.2, 0.6), "cm")
+  ) +  
+  guides(color = guide_legend(override.aes = list(linetype = 1, size = 1.5)))  # Ensure legend lines are visible
+
+
+
+```
+
+
+## Application to the real matrices
+
+```{r Density plot for CRUKPAP}
+
+vec_y_pob_CRUKPAP <- lapply(1:100, function(i) {
+  beta <- beta.sample(ncol(X_CRUKPAP), k = 10, a = 10)
+  y_prob.sample(scale(X_CRUKPAP), beta, "linear")
+})
+
+df_CRUKPAP <- data.frame(p = unlist(vec_y_pob_CRUKPAP), color = rep(1:100, each = 369))
+
+df_CRUKPAP$color <- as.factor(df_CRUKPAP$color)
+
+# Improved density plot
+density_y_CRUKPAP <- ggplot(df_CRUKPAP, aes(x = p, color = color)) +
+  geom_density(size = 0.5) +   
+  geom_vline(xintercept = 0.5, linetype = "dashed", color = "black", linewidth = 1) +  
+  scale_color_viridis_d(option = "plasma") +
+  labs(title = " ",
+       x = " ",
+       y = "p density (CRUKPAP)") +
+  theme(axis.text.x = element_text(size = 24, face = "bold"),
+  axis.title.x = element_text(size = 26),
+  axis.title.y = element_text(size = 28),
+  axis.text.y = element_text(size = 24, face = "bold"),
+  plot.subtitle = element_text(size = 28, face = "bold"),
+  legend.title = element_blank(),
+  legend.text = element_text(size = 28),
+  legend.position = "none",
+  panel.background = element_rect(fill = "#F6F6F6"),
+                   panel.grid.major = element_line(linewidth = 0.5, linetype = 'solid',
+                                colour = "white"), 
+                   panel.grid.minor = element_line(linewidth = 0.25, linetype = 'solid',
+                                colour = "white"),
+  plot.title = element_blank(),
+  plot.margin = unit(c(0.6, 0.2, 0.2, 0.6), "cm")
+                   
+        )
+
+```
+
+
+
+
+```{r DEnsity plot for AEGIS}
+
+vec_y_pob_AEGIS <- lapply(1:100, function(i) {
+  beta <- beta.sample(ncol(X_AEGIS_exp), k = 10, a = 10)
+  y_prob.sample(scale(X_AEGIS_exp), beta, "linear")
+})
+
+
+df_AEGIS <- data.frame(p = unlist(vec_y_pob_AEGIS), color = rep(1:100, each = 505))
+
+df_AEGIS$color <- as.factor(df_AEGIS$color)
+
+# Improved density plot
+density_y_AEGIS <- ggplot(df_AEGIS, aes(x = p, color = color)) +
+  geom_density(size = 0.5) +   
+  geom_vline(xintercept = 0.5, linetype = "dashed", color = "black", linewidth = 1) +  
+  scale_color_viridis_d(option = "viridis") +
+  labs(title = " ",
+       x = " ",
+       y = "p density (AEGIS)") +
+  theme(axis.text.x = element_text(size = 24, face = "bold"),
+  axis.title.x = element_text(size = 26),
+  axis.title.y = element_text(size = 28),
+  axis.text.y = element_text(size = 24, face = "bold"),
+  plot.subtitle = element_text(size = 28, face = "bold"),
+  legend.title = element_blank(),
+  legend.text = element_text(size = 28),
+  legend.position = "none",
+  panel.background = element_rect(fill = "#F6F6F6"),
+                   panel.grid.major = element_line(linewidth = 0.5, linetype = 'solid',
+                                colour = "white"), 
+                   panel.grid.minor = element_line(linewidth = 0.25, linetype = 'solid',
+                                colour = "white"),
+  plot.title = element_blank(),
+  plot.margin = unit(c(0.6, 0.2, 0.2, 0.6), "cm")
+                   
+        )
+
+
+```
+
+```{r Density plot for BC}
+
+vec_y_pob_BC <- lapply(1:100, function(i) {
+  beta <- beta.sample(ncol(X_BC), k = 10, a = 10)
+  y_prob.sample(scale(X_BC), beta, "linear")
+})
+
+df_BC <- data.frame(p = unlist(vec_y_pob_BC), color = rep(1:100, each = nrow(X_BC)))
+df_BC$color <- as.factor(df_BC$color)
+
+# Improved density plot
+density_y_BC <- ggplot(df_BC, aes(x = p, color = color)) +
+  geom_density(size = 0.5) +   
+  geom_vline(xintercept = 0.5, linetype = "dashed", color = "black", linewidth = 1) +  
+  scale_color_viridis_d(option = "turbo") +
+  labs(title = " ",
+       x = " ",
+       y = "p density (Breat cancer)") +
+  theme(axis.text.x = element_text(size = 24, face = "bold"),
+  axis.title.x = element_text(size = 26),
+  axis.title.y = element_text(size = 28),
+  axis.text.y = element_text(size = 24, face = "bold"),
+  plot.subtitle = element_text(size = 28, face = "bold"),
+  legend.title = element_blank(),
+  legend.text = element_text(size = 28),
+  legend.justification = c("right", "center"),
+  legend.position = "none",
+  panel.background = element_rect(fill = "#F6F6F6"),
+                   panel.grid.major = element_line(linewidth = 0.5, linetype = 'solid',
+                                colour = "white"), 
+                   panel.grid.minor = element_line(linewidth = 0.25, linetype = 'solid',
+                                colour = "white"),
+  plot.title = element_blank(),
+  plot.margin = unit(c(0.6, 0.2, 0.2, 0.6), "cm")
+                   
+        )
+
+
+```
+
+```{r combined plot}
+
+graph_linear_density <- ggarrange(density_y_a, density_y_CRUKPAP, density_y_AEGIS, density_y_BC, ncol = 2, nrow = 2,  labels = c("(a) ", "(b) ", "(c) ", "(d) "), common.legend = FALSE, font.label = list(size = 22)) 
+
+ggsave(file = "/home/julie/Documents/Paper_codes/Paper_graphs/y_simulations/Figures/SM_figure_1.png", height = 17, width = 20)
+
+```
+
+# In the non-linear setting 
+
+# ```{r Manually find 10 balanced y }
+# #  list_beta_interaction = list()
+# # list_y_interaction = list()
+# # list_y_prob_interaction = list()
+# 
+# 
+# beta <- beta.sample(ncol(X_CRUKPAP), k = 10, a = 10)
+# y_prob <- y_prob.sample(scale(X_CRUKPAP), beta, "interaction")
+# 
+# 
+# 
+# df_y = data.frame(p = y_prob, color = rep(1:1,each = 369))
+# df_y$color <- as.factor(df_y$color)
+# 
+# density.y <- ggplot(df_y, aes(x=p, color = color)) +
+#   geom_density()+
+#   labs(title = " Fake X")
+# 
+# density.y
+# 
+# # list_beta_interaction[[1]] <- beta
+# # list_y_interaction[[1]] <- 1*(y_prob>=0.5)
+# # list_y_prob_interaction[[1]] <- y_prob
+# # save(list_beta_interaction, list_y_interaction, list_y_prob_interaction, file = "/home/julie/Bureau/Methods/Knockoffs/Knockoff_statistics_synthesis/R_files/list_beta_interaction.R")
+# 
+# ```
+
+
+
+
+
+```{r}
+load("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Statistics_comparison/R_files/list_beta_interaction.R")
+```
+
+
+```{r Density plot for CRUKPAP in the non linear setting}
+
+
+df_CRUKPAP <- data.frame(p = unlist(list_y_prob_interaction), color = rep(1:10, each = 369))
+
+df_CRUKPAP$color <- as.factor(df_CRUKPAP$color)
+
+# Improved density plot
+density_y_int <- ggplot(df_CRUKPAP, aes(x = p, color = color)) +
+  geom_density(alpha = 0.9, size = 0.5) +   
+  geom_vline(xintercept = 0.5, linetype = "dashed", color = "black", linewidth = 1) +  
+  scale_color_viridis_d(option = "plasma") +
+  labs(title = " ",
+       x = " ",
+       y = "p Density") +
+  theme(axis.text.x = element_text(size = 24, face = "bold"),
+  axis.title.x = element_text(size = 26),
+  axis.title.y = element_text(size = 28),
+  axis.text.y = element_text(size = 24, face = "bold"),
+  plot.subtitle = element_text(size = 28, face = "bold"),
+  legend.title = element_blank(),
+  legend.text = element_text(size = 28),
+  legend.justification = c("right", "center"),
+  legend.position = "none",
+  panel.background = element_rect(fill = "#F6F6F6"),
+                   panel.grid.major = element_line(linewidth = 0.5, linetype = 'solid',
+                                colour = "white"), 
+                   panel.grid.minor = element_line(linewidth = 0.25, linetype = 'solid',
+                                colour = "white"),
+  plot.title = element_blank(),
+  plot.margin = unit(c(0.6, 0, 0, 0.6), "cm")
+                   
+        )
+
+ggsave(file = "/home/julie/Documents/Paper_codes/Paper_graphs/y_simulations/Figures/SM_figure_2.png", height = 8, width = 12)
+
+
+```
+

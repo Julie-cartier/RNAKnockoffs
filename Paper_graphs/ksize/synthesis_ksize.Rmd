@@ -1,0 +1,417 @@
+---
+title: "synthesis_ksize"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+source("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Statistics_comparison/Settings.R")
+source("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Statistics_comparison/Functions.R")
+source("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/Functions.R")
+
+# Target FDR for the BH procedure (post wilcoxon test)
+exponents <- -10:0
+vec <- c(10**exponents, 5*10**exponents)
+list_target_fdr_wilcoxon <- vec[-length(vec)]
+list_target_fdr_wilcoxon <- list_target_fdr_wilcoxon[order(list_target_fdr_wilcoxon)]
+
+library("patchwork")
+```
+
+```{r}
+load("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/k_size_effect/R_files/ksize_trueX_fakeY_tables_perfx10.R")
+```
+
+
+```{r}
+df_done_synth_linear <- df_perf_maker(table.perf.linear.ksize.KO, list_target_fdr = list_target_fdr, stats_names = c("k = 10", "k = 30","k = 50"), n.rep = 10)
+
+
+df_power_fdr <- df_done_synth_linear[[1]]
+df_fdp_fdr <- df_done_synth_linear[[2]] 
+df_power_fdp <- df_done_synth_linear[[3]]
+
+```
+
+```{r}
+
+graph_power_fdr <- ggplot(df_power_fdr, aes(x = target_fdr, y = power, color = KO)) + 
+  ylab("Power")+ 
+  ylim(c(-0.25, 1.22)) +    
+  xlab("Target FDR (q)") + 
+  geom_ribbon(aes(ymin = power - std,ymax = power + std, group=KO, fill = KO), alpha = 0.15, colour = NA) + 
+  geom_line(aes(group = KO, linetype = KO), linewidth = 1.5)+
+  scale_color_manual(values=c("#17becf", "#007383", "#002f3f"))  +
+  scale_fill_manual(values=c("#17becf", "#007383", "#002f3f")) +
+  scale_linetype_manual(values=c("solid", "twodash", "dotted")) +
+  theme(axis.text.x = element_text(size = 22, face = "bold"),
+  axis.title.x = element_text(size = 24),
+  axis.title.y = element_text(size = 24),
+  axis.text.y = element_text(size = 22, face = "bold"),
+  plot.subtitle = element_text(size = 26, face = "bold"),
+  legend.title = element_blank(),
+  legend.text = element_text(size = 26),
+  legend.position = "none",
+  panel.background = element_rect(fill = "#F6F6F6"),
+                   panel.grid.major = element_line(linewidth = 0.5, linetype = 'solid',
+                                colour = "white"), 
+                   panel.grid.minor = element_line(linewidth = 0.25, linetype = 'solid',
+                                colour = "white"),
+  plot.title = element_blank(),
+  plot.margin = unit(c(0.6, 0.2, 0.2, 0.6), "cm")
+        ) +   guides(linetype = guide_legend(override.aes = list(linewidth = 0.9)))
+graph_power_fdr
+
+
+
+# Idem FDP vs FDR
+
+
+graph_fdp_fdr <- ggplot(df_fdp_fdr, aes(x = target_fdr, y = fdp, color = KO)) + 
+   ylab("FDP")+ 
+   xlab("Target FDR (q)") + 
+   ylim(c(-0.25, 1.22)) + 
+   geom_ribbon(aes(ymin = fdp - std,ymax = fdp + std, group = KO, fill = KO), alpha = 0.15, colour = NA) + 
+   #geom_point(size = 3, shape = 3)+ 
+   geom_line(aes(group = KO, linetype = KO), linewidth = 1.5)+
+   geom_abline(intercept = 0, slope = 1, color="black", linetype="dashed", linewidth = 1)+
+   #labs(subtitle = "Linear") +
+   scale_color_manual(values=c("#17becf", "#007383", "#002f3f"))  +
+   scale_fill_manual(values=c("#17becf", "#007383", "#002f3f")) +
+   scale_linetype_manual(values=c("solid", "twodash", "dotted")) +
+   theme(axis.text.x = element_text(size = 22, face = "bold"),
+   axis.title.x = element_text(size = 24),
+   axis.title.y = element_text(size = 24),
+   axis.text.y = element_text(size = 22, face = "bold"),
+   legend.title = element_blank(),
+   legend.justification = c("right", "center"),
+   legend.key.width = unit(1.5,"cm"),
+   legend.position = c(.35, 0.8),
+   plot.subtitle = element_text(size = 26, face = "bold"),
+   panel.background = element_rect(fill = "#F6F6F6"),
+                   panel.grid.major = element_line(linewidth = 0.5, linetype = 'solid',
+                                colour = "white"), 
+                   panel.grid.minor = element_line(linewidth = 0.25, linetype = 'solid',
+                                colour = "white"),
+   plot.title = element_blank(),
+   plot.margin = unit(c(0.6, 0.2, 0.2, 0.6), "cm")
+        )
+
+graph_fdp_fdr
+
+
+graph_power_fdp <- ggplot(df_power_fdp, aes(x=fdp, y=power, color = KO)) + 
+   ylab("Power")+ 
+   xlab("FDP") + 
+   ylim(c(-0.25, 1.22)) + 
+   #ylim(c(-0.15, 1.20)) + 
+   # geom_pointrange( aes(ymin = power-std, ymax = power+std),linewidth = 1)+
+   geom_point(aes(shape = KO), size = 3) +
+   scale_shape_manual(values = c(15, 17, 18)) +  
+   geom_ribbon(aes(ymin = power - std, ymax = power + std, group = KO, fill = KO), alpha = 0.15, colour = NA) +
+   #geom_line(data = subset(df_power_fdp, KO == 'LASSO'), aes(group = KO))+
+   #geom_line(aes(group = KO), linewidth = 1.5)+
+   labs(title = "Power vs FDP, k = 10, X from X real") +
+   scale_color_manual(values=c("#17becf", "#007383", "#002f3f"))  +
+   scale_fill_manual(values=c("#17becf", "#007383", "#002f3f")) +
+   theme(axis.text.x = element_text(size = 22, face = "bold"),
+   axis.title.x = element_text(size = 24),
+   axis.title.y = element_text(size = 24),
+   axis.text.y = element_text(size = 22, face = "bold"),
+   legend.title = element_blank(),
+   legend.text = element_text(size = 26),
+   legend.justification = c("right", "center"),
+   legend.position = c(.3, 0.7),
+   #legend.key = element_rect(fill = "lightblue", color = NA),
+  # Modifier la taille et la largeur des signes de la légende
+    #legend.key.size = unit(1.5, "cm"),
+    #legend.key.width = unit(1.5,"cm"),
+  panel.background = element_rect(fill = "#F6F6F6"),
+                   panel.grid.major = element_line(linewidth = 0.5, linetype = 'solid',
+                                colour = "white"), 
+                   panel.grid.minor = element_line(linewidth = 0.25, linetype = 'solid',
+                                colour = "white"),
+   plot.title = element_blank(),
+  plot.margin = unit(c(0.6, 0.2, 0.2, 0.6), "cm")
+        )
+        
+graph_power_fdp
+```
+
+```{r}
+
+legend_power_fdr <- get_legend(graph_power_fdr)
+graph_power_fdp_fdr <-ggarrange(
+  graph_power_fdp,               
+  ggarrange(graph_power_fdr, graph_fdp_fdr, ncol = 2, labels = c("(b) ", "(c) "), font.label = list(size = 18)), 
+  nrow = 2, 
+  labels = "(a) ",
+  font.label = list(size = 18),
+  legend = "top",
+  heights = c(1.1, 1)
+  ) 
+
+ggsave(file ="/home/julie/Documents/Paper_codes/Paper_graphs/ksize/Figures/SM_figure_18.png", height = 10, width = 14)
+
+```
+
+
+
+
+
+
+########################## Comparison wwith the Lasso #####################################################
+
+
+Not in the paper
+
+```{r}
+df_done_synth_linear <- df_perf_maker(table.perf.linear.ksize.LPLR, list_target_fdr = list_target_fdr, stats_names = c("LASSO, k = 10", "LASSO, k = 30","LASSO, k = 50"), n.rep = 10)
+ 
+df_power_fdp <- df_done_synth_linear[[3]]
+
+graph_power_fdp <- ggplot(df_power_fdp, aes(x=fdp, y=power, color = KO)) + 
+   ylab("Power")+ 
+   xlab("FDP") + 
+   ylim(c(-0.25, 1.22)) + 
+   #ylim(c(-0.15, 1.20)) + 
+   # geom_pointrange( aes(ymin = power-std, ymax = power+std),linewidth = 1)+
+   geom_point(aes(shape = KO), size = 3) +
+   scale_shape_manual(values = c(15, 17, 18)) +  
+   geom_ribbon(aes(ymin = power - std, ymax = power + std, group = KO, fill = KO), alpha = 0.15, colour = NA) +
+   geom_line(data = subset(df_power_fdp, KO == 'LASSO'), aes(group = KO))+
+   #geom_line(aes(group = KO), linewidth = 1.5)+
+   labs(title = "Power vs FDP, k = 10, X from X real") +
+   scale_color_manual(values=c("#17becf", "#007383", "#002f3f"))  +
+   scale_fill_manual(values=c("#17becf", "#007383", "#002f3f")) +
+   theme(axis.text.x = element_text(size = 20, face = "bold"),
+   axis.title.x = element_text(size = 22),
+   axis.title.y = element_text(size = 22),
+   axis.text.y = element_text(size = 20, face = "bold"),
+   legend.title = element_blank(),
+   legend.text = element_text(size = 24),
+   legend.justification = c("right", "center"),
+   legend.position = c(.5, 0.7),
+   #legend.key = element_rect(fill = "lightblue", color = NA),
+  # Modifier la taille et la largeur des signes de la légende
+    #legend.key.size = unit(1.5, "cm"),
+    #legend.key.width = unit(1.5,"cm"),
+  panel.background = element_rect(fill = "#F6F6F6"),
+                   panel.grid.major = element_line(linewidth = 0.5, linetype = 'solid',
+                                colour = "white"), 
+                   panel.grid.minor = element_line(linewidth = 0.25, linetype = 'solid',
+                                colour = "white"),
+   plot.title = element_blank()
+        )
+        
+graph_power_fdp
+
+ggsave(file = "/home/julie/Documents/Paper_codes/Paper_graphs/ksize/Figures/SM_Figure_LASSO.png", height = 6, width = 7)
+```
+
+
+#################### Comparison with LASSO, Wilcoxon for k = 30 ########################################
+
+```{r}
+table.perf.linear.k30.LPLR <- table.perf.linear.ksize.LPLR[, grep("k_30", colnames(table.perf.linear.ksize.LPLR))]
+table.perf.linear.k30.KO <- table.perf.linear.ksize.KO[, grep("k_30", colnames(table.perf.linear.ksize.LPLR))]
+
+df_done_synth_KO = df_perf_maker(table.perf.linear.k30.KO, list_target_fdr, stats_names = c("KO"), n.rep = 10)
+df_done_synth_wilcoxon = df_perf_maker(table.perf.linear.k30.wilcoxon, list_target_fdr_wilcoxon, stats_names = c("Wilcoxon "), n.rep = 10)
+
+```
+
+# Is the FDP controlled ?
+
+```{r  Curves in the interaction setting }
+df_fdp_fdr <- df_done_synth_KO[[2]] 
+
+graph_fdp_fdr_KO <- ggplot(df_fdp_fdr, aes(x = target_fdr, y = fdp, color = KO)) + 
+   ylab("FDP")+ 
+   xlab("Target FDR (q)") + 
+   ylim(c(-0.25, 1.22)) + 
+   geom_ribbon(aes(ymin = fdp - std,ymax = fdp + std, group = KO, fill = KO), alpha = 0.15, colour = NA) + 
+   geom_line(aes(group = KO), linewidth = 1.5)+
+   geom_abline(intercept = 0, slope = 1, color="black", linetype="dashed", linewidth = 1)+
+   scale_color_manual(values=c("#17becf"))  +
+   scale_fill_manual(values=c("#17becf")) +
+   theme(axis.text.x = element_text(size = 22, face = "bold"),
+   axis.title.x = element_text(size = 24),
+   axis.title.y = element_text(size = 24),
+   axis.text.y = element_text(size = 22, face = "bold"),
+   legend.title = element_blank(),
+   legend.text = element_text(size = 26),
+   legend.justification = c("right", "center"),
+   legend.position = c(.9, 0.2),
+   plot.subtitle = element_text(size = 18, face = "bold"),
+   panel.background = element_rect(fill = "#F6F6F6"),
+                   panel.grid.major = element_line(size = 0.5, linetype = 'solid',
+                                colour = "white"), 
+                   panel.grid.minor = element_line(size = 0.25, linetype = 'solid',
+                                colour = "white"),
+   plot.title = element_blank(),
+   plot.margin = unit(c(0.6, 0.2, 0.2, 0.6), "cm")
+        )
+
+graph_fdp_fdr_KO
+
+
+
+df_fdp_fdr_wilcoxon <- df_done_synth_wilcoxon[[2]]
+
+
+ref_line <- data.frame(target_fdr = 10^seq(log10(min(df_fdp_fdr_wilcoxon$target_fdr)),
+                                           log10(max(df_fdp_fdr_wilcoxon$target_fdr)),
+                                           length.out = 100))
+ref_line$fdp <- ref_line$target_fdr  
+
+
+graph_fdp_fdr_wilcoxon <- ggplot(df_fdp_fdr_wilcoxon, aes(x = target_fdr, y = fdp, color = KO)) +
+   ylab("FDP")+ 
+   xlab("Target FDR (q)") + 
+   ylim(c(-0.25, 1.22)) + 
+   scale_x_log10() +
+   geom_ribbon(aes(ymin = fdp - std,ymax = fdp + std, group = KO, fill = KO), alpha = 0.15, colour = NA) + 
+   geom_point(aes(shape = KO), size = 3) +
+   geom_line(aes(group = KO), linewidth = 1.5)+
+   geom_line(data = ref_line, aes(x = target_fdr, y = fdp), color = "black", linetype = "dashed", linewidth = 1) +
+   #geom_abline(intercept = 0, slope = 1, color="black", linetype="dashed", linewidth = 1)+
+   scale_color_manual(values=c("#a28823"))  +
+   scale_fill_manual(values=c("#a28823")) +
+   theme(axis.text.x = element_text(size = 22, face = "bold"),
+   axis.title.x = element_text(size = 24),
+   axis.title.y = element_text(size = 24),
+   axis.text.y = element_text(size = 22, face = "bold"),
+   legend.title = element_blank(),
+   legend.text = element_text(size = 26),
+   legend.justification = c("right", "center"),
+   legend.position = c(.8, 0.4),
+   plot.subtitle = element_text(size = 18, face = "bold"),
+   panel.background = element_rect(fill = "#F6F6F6"),
+                   panel.grid.major = element_line(size = 0.5, linetype = 'solid',
+                                colour = "white"), 
+                   panel.grid.minor = element_line(size = 0.25, linetype = 'solid',
+                                colour = "white"),
+   plot.title = element_blank(),
+   plot.margin = unit(c(0.6, 0.2, 0.2, 0.6), "cm")
+        )
+graph_fdp_fdr_wilcoxon
+
+
+
+graph_fdp_fdr <- ggarrange(graph_fdp_fdr_KO, graph_fdp_fdr_wilcoxon, ncol = 2, labels = c("(a) ", "(b)"), font.label = list(size = 16))
+
+
+ggsave(file = "/home/julie/Documents/Paper_codes/Paper_graphs/ksize/Figures/SM_figure_20.png", height = 5, width = 14)
+```
+
+```{r}
+
+# Get data
+
+df_done_boxplot_LPLR = df_perf_maker_boxplot(table.perf.linear.k30.LPLR, list_target_fdr = list_lambda, stats_names = c("LASSO"), n.rep = 10, length_bin = 0.1)
+
+df_done_boxplot_KO = df_perf_maker_boxplot(table.perf.linear.k30.KO, list_target_fdr = list_target_fdr, stats_names = c("KO (LCD)"), n.rep = 10, length_bin = 0.1)
+
+df_done_boxplot_wilcoxon = df_perf_maker_boxplot(table.perf.linear.k30.wilcoxon, list_target_fdr = list_target_fdr_wilcoxon, stats_names = c("Wilcoxon "), n.rep = 10, length_bin = 0.1)
+
+#Bind results
+
+df_boxplot <- rbind(df_done_boxplot_KO, df_done_boxplot_LPLR, df_done_boxplot_wilcoxon)
+
+df_aggregated <- summarise(group_by(df_boxplot, FDP_levels, KO), Count = n(), .groups = "drop") # get the count of points
+df_aggregated <- mutate(group_by(df_aggregated, KO), Normalized_Count = Count*100 / sum(Count)) # Normalized count by the length of parameters sequence (list_target_fdr, list_lambda, ...)
+df_means <- summarise(group_by(df_boxplot, FDP_levels, KO), Mean = mean(Power), .groups = "drop") # get the mean power over an FDP interval
+
+# Create boxplots which give point density for each methods
+
+count_plot <- ggplot(df_aggregated, aes(x = FDP_levels, y = Normalized_Count, fill = KO, color = KO)) +
+  geom_bar(stat = "identity", position = position_dodge(0.8), width = 0.6, alpha = 0.8) +
+  ylim(0, 110) +
+  geom_text(aes(label = round(Normalized_Count, 1)), # text/labels adjustments
+            position = position_dodge(0.8), 
+            vjust = -0.5,  
+            size = 5.,     
+            angle = 20,    
+            color = "black",
+            fontface = "bold") +
+  scale_fill_manual(values = c("#17becf", "#7c6fb0", "#a28823", "#993300")) +
+  scale_color_manual(values = c("#17becf", "#7c6fb0", "#a28823", "#993300")) +
+  labs(
+    x = NULL,  # Remove x-axis label to align with median plot
+    y = "Normalized count",
+    fill = "Methods",
+    shape = "Methods",  # Shape legend for median plot
+    color = "Methods"   # Color legend for median plot
+  ) +
+  theme(
+    axis.text.x = element_text(size = 22, face = "bold", angle = 45, hjust = 1),
+    axis.title.x = element_text(size = 24),
+    axis.title.y = element_text(size = 24, vjust = 2),
+    axis.text.y = element_text(size = 22, face = "bold"),
+    legend.position = c(0.92, 0.6),  
+    legend.title = element_blank(),
+    legend.text = element_text(size = 26),
+    legend.justification = c("right", "center"),
+    legend.spacing.x = unit(0.7, "cm"),
+    panel.background = element_rect(fill = "#F6F6F6"),
+    panel.grid.major = element_line(size = 0.5, linetype = 'solid', colour = "white"),
+    panel.grid.minor = element_line(size = 0.25, linetype = 'solid', colour = "white"),
+    plot.title = element_blank()
+  ) + guides(#  legend guide
+    color = guide_legend(ncol = 3),  
+    fill = guide_legend(ncol = 3),   
+    shape = guide_legend(ncol = 3)  
+  ) 
+
+# Mean plot 
+
+mean_comp <- ggplot(df_aggregated, aes(x = FDP_levels, y = Power, size = Count, fill = KO, color = KO, shape = KO)) +
+  geom_point(data = df_means, aes(x = FDP_levels, y = Mean), size = 5, stroke = 1.9, position = position_dodge(width = 0.8)) +
+  scale_color_manual(values = c("#17becf", "#7c6fb0", "#a28823", "#993300")) +
+  scale_fill_manual(values = c("#17becf", "#7c6fb0", "#a28823", "#993300")) +
+  scale_shape_manual(values = c(3, 4, 8)) +  # Shapes for KO methods
+  ylim(-0.1, 1) +
+  labs(
+    x = "FDP",
+    y = "Power (mean)",
+    fill = "Methods",
+    shape = "Methods",  
+    color = "Methods"   
+  ) +
+  theme(
+    axis.text.x = element_text(size = 22, face = "bold", angle = 45, hjust = 1),
+    axis.title.x = element_text(size = 24),
+    axis.title.y = element_text(size = 26),
+    axis.text.y = element_text(size = 22, face = "bold"),
+    legend.position = c(0.45, 0.9),  
+    legend.title = element_blank(),
+    legend.text = element_text(size = 26),
+    legend.justification = c("right", "center"),
+    legend.spacing.x = unit(0.7, "cm"),
+    panel.background = element_rect(fill = "#F6F6F6"),
+    panel.grid.major = element_line(size = 0.5, linetype = 'solid', colour = "white"),
+    panel.grid.minor = element_line(size = 0.25, linetype = 'solid', colour = "white"),
+    plot.title = element_blank()
+  ) + guides(# legend guide
+    color = guide_legend(ncol = 3), 
+    fill = guide_legend(ncol = 3),   
+    shape = guide_legend(ncol = 3)   
+  )
+
+mean_comp
+# Combine plots
+
+combined_plot <- count_plot / mean_comp +
+  plot_layout(axes = "collect", heights = c(1, 2))  
+
+combined_plot
+
+
+ggsave(file = "/home/julie/Documents/Paper_codes/Paper_graphs/ksize/Figures/SM_Figure_19.png", height = 10, width = 16)
+
+```

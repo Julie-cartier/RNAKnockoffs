@@ -42,13 +42,13 @@ graph_power_fdr <- ggplot(df_power_fdr, aes(x = target_fdr, y = power, color = K
   scale_color_manual(values=c("#6050dc","#17becf", "#8FAD86", "#993300"))  +
   scale_fill_manual(values=c("#6050dc","#17becf", "#8FAD86", "#993300")) +
   scale_linetype_manual(values=c("dotdash", "longdash", "solid", "twodash")) +
-  theme(axis.text.x = element_text(size = 20, face = "bold"),
-  axis.title.x = element_text(size = 22),
-  axis.title.y = element_text(size = 22),
-  axis.text.y = element_text(size = 20, face = "bold"),
-  plot.subtitle = element_text(size = 24, face = "bold"),
+  theme(axis.text.x = element_text(size = 22, face = "bold"),
+  axis.title.x = element_text(size = 24),
+  axis.title.y = element_text(size = 24),
+  axis.text.y = element_text(size = 22, face = "bold"),
+  plot.subtitle = element_text(size = 26, face = "bold"),
   legend.title = element_blank(),
-  legend.text = element_text(size = 24),
+  legend.text = element_text(size = 26),
   legend.justification = c("right", "center"),
   #legend.key.width = unit(0.9,"cm"),
   #legend.position = c(.4, 0.75),
@@ -59,7 +59,7 @@ graph_power_fdr <- ggplot(df_power_fdr, aes(x = target_fdr, y = power, color = K
                    panel.grid.minor = element_line(size = 0.25, linetype = 'solid',
                                 colour = "white"),
   plot.title = element_blank(),
-  plot.margin = unit(c(0.6, 0, 0, 0.6), "cm")
+  plot.margin = unit(c(0.6, 0.2, 0.2, 0.6), "cm")
                    
         )
 graph_power_fdr
@@ -80,12 +80,12 @@ graph_fdp_fdr <- ggplot(df_fdp_fdr, aes(x = target_fdr, y = fdp, color = KO)) +
    scale_color_manual(values=c("#6050dc","#17becf", "#8FAD86", "#993300"))  +
    scale_fill_manual(values=c("#6050dc","#17becf", "#8FAD86", "#993300")) +
    scale_linetype_manual(values=c("dotdash", "longdash", "solid", "twodash")) +
-   theme(axis.text.x = element_text(size = 20, face = "bold"),
-   axis.title.x = element_text(size = 22),
-   axis.title.y = element_text(size = 22),
-   axis.text.y = element_text(size = 20, face = "bold"),
+   theme(axis.text.x = element_text(size = 22, face = "bold"),
+   axis.title.x = element_text(size = 24),
+   axis.title.y = element_text(size = 24),
+   axis.text.y = element_text(size = 22, face = "bold"),
    legend.title = element_blank(),
-   legend.text = element_text(size = 24),
+   legend.text = element_text(size = 26),
    legend.justification = c("right", "center"),
    legend.position = c(.35, 0.8),
    #legend.position = "none",
@@ -97,7 +97,7 @@ graph_fdp_fdr <- ggplot(df_fdp_fdr, aes(x = target_fdr, y = fdp, color = KO)) +
                    panel.grid.minor = element_line(size = 0.25, linetype = 'solid',
                                 colour = "white"),
    plot.title = element_blank(),
-   plot.margin = unit(c(0.6, 0, 0, 0.6), "cm")
+   plot.margin = unit(c(0.6, 0.2, 0.2, 0.6), "cm")
         )  +  guides(linetype = guide_legend(override.aes = list(linewidth = 0.9)))
 
 graph_fdp_fdr
@@ -114,17 +114,17 @@ graph_power_fdp <- ggplot(df_power_fdp, aes(x=fdp, y=power, color = KO)) +
    geom_point(aes(shape = KO), size = 4) +
    scale_shape_manual(values = c(7, 20, 15, 17, 18)) +  
    geom_ribbon(aes(ymin = power - std, ymax = power + std, group = KO, fill = KO), alpha = 0.15, colour = NA) +
-   geom_line(data = subset(df_power_fdp, KO == 'LASSO'), aes(group = KO))+
+   #geom_line(data = subset(df_power_fdp, KO == 'LASSO'), aes(group = KO))+
    #geom_line(aes(group = KO), linewidth = 1.5)+
    labs(title = "Power vs FDP, k = 10, X from X real") +
    scale_color_manual(values=c("#6050dc","#17becf", "#8FAD86", "#993300", "#DAA520"))  +
    scale_fill_manual(values=c("#6050dc","#17becf", "#8FAD86", "#993300", "#DAA520")) +
-   theme(axis.text.x = element_text(size = 20, face = "bold"),
-   axis.title.x = element_text(size = 22),
-   axis.title.y = element_text(size = 22),
-   axis.text.y = element_text(size = 20, face = "bold"),
+   theme(axis.text.x = element_text(size = 22, face = "bold"),
+   axis.title.x = element_text(size = 24),
+   axis.title.y = element_text(size = 24),
+   axis.text.y = element_text(size = 22, face = "bold"),
    legend.title = element_blank(),
-   legend.text = element_text(size = 24),
+   legend.text = element_text(size = 26),
    legend.justification = c("right", "center"),
    legend.position = c(.2, 0.7),
    #legend.key = element_rect(fill = "lightblue", color = NA),
@@ -136,7 +136,8 @@ graph_power_fdp <- ggplot(df_power_fdp, aes(x=fdp, y=power, color = KO)) +
                                 colour = "white"), 
                    panel.grid.minor = element_line(size = 0.25, linetype = 'solid',
                                 colour = "white"),
-   plot.title = element_blank()
+   plot.title = element_blank(),
+  plot.margin = unit(c(0.6, 0.2, 0.2, 0.6), "cm")
         )
         
 graph_power_fdp
@@ -149,10 +150,10 @@ library(ggpubr)
 legend_power_fdr <- get_legend(graph_power_fdr)
 graph_power_fdp_fdr <-ggarrange(
   graph_power_fdp,             
-  ggarrange(graph_power_fdr, graph_fdp_fdr, ncol = 2, labels = c("(b) ", "(c) "), font.label = list(size = 16)), 
+  ggarrange(graph_power_fdr, graph_fdp_fdr, ncol = 2, labels = c("(b) ", "(c) "), font.label = list(size = 18)), 
   nrow = 2, 
   labels = "(a) ",
-  font.label = list(size = 16),
+  font.label = list(size = 18),
   legend = "top",
   heights = c(1.1, 1)
   ) 
@@ -188,15 +189,15 @@ graph_power_fdr <- ggplot(df_power_fdr, aes(x = target_fdr, y = power, color = K
   scale_color_manual(values=c("#DAA520", "#8FAD86"))  +
   scale_fill_manual(values=c("#DAA520", "#8FAD86")) +
   scale_linetype_manual(values=c("longdash", "twodash")) +
-  theme(axis.text.x = element_text(size = 20, face = "bold"),
-  axis.title.x = element_text(size = 22),
-  axis.title.y = element_text(size = 22),
-  axis.text.y = element_text(size = 20, face = "bold"),
-  plot.subtitle = element_text(size = 24, face = "bold"),
+  theme(axis.text.x = element_text(size = 22, face = "bold"),
+  axis.title.x = element_text(size = 24),
+  axis.title.y = element_text(size = 24),
+  axis.text.y = element_text(size = 22, face = "bold"),
+  plot.subtitle = element_text(size = 26, face = "bold"),
   legend.title = element_blank(),
   #legend.key.width = unit(0.9,"cm"),
   #legend.position = c(.4, 0.75),
-  legend.text = element_text(size = 24),
+  legend.text = element_text(size = 26),
    legend.justification = c("right", "center"),
   legend.position = "none",
   panel.background = element_rect(fill = "#F6F6F6"),
@@ -205,7 +206,7 @@ graph_power_fdr <- ggplot(df_power_fdr, aes(x = target_fdr, y = power, color = K
                    panel.grid.minor = element_line(size = 0.25, linetype = 'solid',
                                 colour = "white"),
   plot.title = element_blank(),
-  plot.margin = unit(c(0.6, 0, 0, 0.6), "cm")
+  plot.margin = unit(c(0.6, 0.2, 0.2, 0.6), "cm")
                    
         )
 graph_power_fdr
@@ -226,23 +227,23 @@ graph_fdp_fdr <- ggplot(df_fdp_fdr, aes(x = target_fdr, y = fdp, color = KO)) +
    scale_color_manual(values=c("#DAA520", "#8FAD86"))  +
    scale_fill_manual(values=c("#DAA520", "#8FAD86")) +
    scale_linetype_manual(values=c("longdash", "twodash")) +
-   theme(axis.text.x = element_text(size = 20, face = "bold"),
-   axis.title.x = element_text(size = 22),
-   axis.title.y = element_text(size = 22),
-   axis.text.y = element_text(size = 20, face = "bold"),
+   theme(axis.text.x = element_text(size = 22, face = "bold"),
+   axis.title.x = element_text(size = 24),
+   axis.title.y = element_text(size = 24),
+   axis.text.y = element_text(size = 22, face = "bold"),
    legend.title = element_blank(),
-   legend.text = element_text(size = 24),
+   legend.text = element_text(size = 26),
    legend.justification = c("right", "center"),
    legend.key.width = unit(1.5,"cm"),
    legend.position = c(.35, 0.7),
-   plot.subtitle = element_text(size = 18, face = "bold"),
+   #plot.subtitle = element_text(size = 18, face = "bold"),
    panel.background = element_rect(fill = "#F6F6F6"),
                    panel.grid.major = element_line(size = 0.5, linetype = 'solid',
                                 colour = "white"), 
                    panel.grid.minor = element_line(size = 0.25, linetype = 'solid',
                                 colour = "white"),
    plot.title = element_blank(),
-   plot.margin = unit(c(0.6, 0, 0, 0.6), "cm")
+   plot.margin = unit(c(0.6, 0.2, 0.2, 0.6), "cm")
         ) +  guides(linetype = guide_legend(override.aes = list(linewidth = 0.9)))
 
 
@@ -260,17 +261,17 @@ graph_power_fdp <- ggplot(df_power_fdp, aes(x=fdp, y=power, color = KO)) +
    geom_point(aes(shape = KO), size = 4) +
    scale_shape_manual(values = c( 20, 15, 17, 18)) +  
    geom_ribbon(aes(ymin = power - std, ymax = power + std, group = KO, fill = KO), alpha = 0.15, colour = NA) +
-   geom_line(data = subset(df_power_fdp, KO == 'LASSO'), aes(group = KO))+
+   #geom_line(data = subset(df_power_fdp, KO == 'LASSO'), aes(group = KO))+
    #geom_line(aes(group = KO), linewidth = 1.5)+
    labs(title = "Power vs FDP, k = 10, X from X real") +
    scale_color_manual(values=c("#DAA520", "#8FAD86"))  +
    scale_fill_manual(values=c("#DAA520", "#8FAD86")) +
-   theme(axis.text.x = element_text(size = 20, face = "bold"),
-   axis.title.x = element_text(size = 22),
-   axis.title.y = element_text(size = 22),
-   axis.text.y = element_text(size = 20, face = "bold"),
+   theme(axis.text.x = element_text(size = 22, face = "bold"),
+   axis.title.x = element_text(size = 24),
+   axis.title.y = element_text(size = 24),
+   axis.text.y = element_text(size = 22, face = "bold"),
    legend.title = element_blank(),
-   legend.text = element_text(size = 24),
+   legend.text = element_text(size = 26),
    legend.justification = c("right", "center"),
    legend.position = c(.3, 0.8),
    #legend.key = element_rect(fill = "lightblue", color = NA),
@@ -282,7 +283,8 @@ graph_power_fdp <- ggplot(df_power_fdp, aes(x=fdp, y=power, color = KO)) +
                                 colour = "white"), 
                    panel.grid.minor = element_line(size = 0.25, linetype = 'solid',
                                 colour = "white"),
-   plot.title = element_blank()
+   plot.title = element_blank(),
+   plot.margin = unit(c(0.6, 0.2, 0.2, 0.6), "cm")
         )
         
 graph_power_fdp
@@ -294,15 +296,15 @@ legend_power_fdr <- get_legend(graph_power_fdr)
 graph_power_fdp_fdr <-ggarrange(
   graph_power_fdp,                # First row with line plot
   # Second row with box and dot plots
-  ggarrange(graph_power_fdr, graph_fdp_fdr, ncol = 2, labels = c("(b) ", "(c)"), font.label = list(size = 14)), 
+  ggarrange(graph_power_fdr, graph_fdp_fdr, ncol = 2, labels = c("(b) ", "(c)"), font.label = list(size = 18)), 
   nrow = 2, 
   labels = "(a) ",
-  font.label = list(size = 14),
+  font.label = list(size = 18),
   heights = c(1.1, 1)
   ) 
 
 
-ggsave(file = "/home/julie/Documents/Paper_codes/Paper_graphs/Methods_comparison/Figures/SM_Figure_3.png", height = 10, width = 14)
+ggsave(file = "/home/julie/Documents/Paper_codes/Paper_graphs/Methods_comparison/Figures/SM_figure_4.png", height = 10, width = 14)
 ```
 
 
@@ -338,13 +340,13 @@ graph_power_fdr <- ggplot(df_power_fdr, aes(x = target_fdr, y = power, color = K
   scale_color_manual(values=c("#6050dc","#17becf", "#8FAD86", "#993300"))  +
   scale_fill_manual(values=c("#6050dc","#17becf", "#8FAD86", "#993300")) +
   scale_linetype_manual(values=c("dotdash", "longdash", "solid", "twodash")) +
-  theme(axis.text.x = element_text(size = 20, face = "bold"),
-  axis.title.x = element_text(size = 22),
-  axis.title.y = element_text(size = 22),
-  axis.text.y = element_text(size = 20, face = "bold"),
-  plot.subtitle = element_text(size = 24, face = "bold"),
+  theme(axis.text.x = element_text(size = 22, face = "bold"),
+  axis.title.x = element_text(size = 24),
+  axis.title.y = element_text(size = 24),
+  axis.text.y = element_text(size = 22, face = "bold"),
+  plot.subtitle = element_text(size = 26, face = "bold"),
   legend.title = element_blank(),
-  legend.text = element_text(size = 24),
+  legend.text = element_text(size = 26),
   legend.justification = c("right", "center"),
   legend.position = "none",
   panel.background = element_rect(fill = "#F6F6F6"),
@@ -353,7 +355,7 @@ graph_power_fdr <- ggplot(df_power_fdr, aes(x = target_fdr, y = power, color = K
                    panel.grid.minor = element_line(size = 0.25, linetype = 'solid',
                                 colour = "white"),
   plot.title = element_blank(),
- plot.margin = unit(c(0.6, 0, 0, 0.6), "cm")
+ plot.margin = unit(c(0.6, 0.2, 0.2, 0.6), "cm")
                    
         )
 graph_power_fdr
@@ -371,12 +373,12 @@ graph_fdp_fdr <- ggplot(df_fdp_fdr, aes(x = target_fdr, y = fdp, color = KO)) +
    scale_color_manual(values=c("#6050dc","#17becf", "#8FAD86", "#993300"))  +
    scale_fill_manual(values=c("#6050dc","#17becf", "#8FAD86", "#993300")) +
    scale_linetype_manual(values=c("dotdash", "longdash", "solid", "twodash")) +
-   theme(axis.text.x = element_text(size = 20, face = "bold"),
-   axis.title.x = element_text(size = 22),
-   axis.title.y = element_text(size = 22),
-   axis.text.y = element_text(size = 20, face = "bold"),
+   theme(axis.text.x = element_text(size = 22, face = "bold"),
+   axis.title.x = element_text(size = 24),
+   axis.title.y = element_text(size = 24),
+   axis.text.y = element_text(size = 22, face = "bold"),
    legend.title = element_blank(),
-   legend.text = element_text(size = 24),
+   legend.text = element_text(size = 26),
    legend.justification = c("right", "center"),
    legend.position = c(.35, 0.8),
    #legend.position = "none",
@@ -388,7 +390,7 @@ graph_fdp_fdr <- ggplot(df_fdp_fdr, aes(x = target_fdr, y = fdp, color = KO)) +
                    panel.grid.minor = element_line(size = 0.25, linetype = 'solid',
                                 colour = "white"),
    plot.title = element_blank(),
-   plot.margin = unit(c(0.6, 0, 0, 0.6), "cm")
+   plot.margin = unit(c(0.6, 0.2, 0.2, 0.6), "cm")
         ) +   guides(linetype = guide_legend(override.aes = list(linewidth = 0.9)))
 
 
@@ -409,12 +411,12 @@ graph_power_fdp <- ggplot(df_power_fdp, aes(x=fdp, y=power, color = KO)) +
    labs(title = "Power vs FDP, k = 10, X from X real") +
    scale_color_manual(values=c("#6050dc","#17becf", "#8FAD86", "#993300", "#DAA520"))  +
    scale_fill_manual(values=c("#6050dc","#17becf", "#8FAD86", "#993300", "#DAA520")) +
-   theme(axis.text.x = element_text(size = 20, face = "bold"),
-   axis.title.x = element_text(size = 22),
-   axis.title.y = element_text(size = 22),
-   axis.text.y = element_text(size = 20, face = "bold"),
+   theme(axis.text.x = element_text(size = 22, face = "bold"),
+   axis.title.x = element_text(size = 24),
+   axis.title.y = element_text(size = 24),
+   axis.text.y = element_text(size = 22, face = "bold"),
    legend.title = element_blank(),
-   legend.text = element_text(size = 24),
+   legend.text = element_text(size = 26),
    legend.justification = c("right", "center"),
    legend.position = c(.2, 0.7),
    #legend.key = element_rect(fill = "lightblue", color = NA),
@@ -438,16 +440,16 @@ graph_power_fdp
 legend_power_fdr <- get_legend(graph_power_fdr)
 graph_power_fdp_fdr <-ggarrange(
   graph_power_fdp,                
-  ggarrange(graph_power_fdr, graph_fdp_fdr, ncol = 2, labels = c("(b) ", "(c) "), font.label = list(size = 16)), 
+  ggarrange(graph_power_fdr, graph_fdp_fdr, ncol = 2, labels = c("(b) ", "(c) "), font.label = list(size = 18)), 
   nrow = 2, 
   labels = "(a) ",
-  font.label = list(size = 16),
+  font.label = list(size = 18),
   legend = "top",
   heights = c(1.1, 1)
   ) 
 
 
-ggsave(file = "/home/julie/Documents/Paper_codes/Paper_graphs/Methods_comparison/Figures/SM_figure_15.png", height = 10, width = 14)
+ggsave(file = "/home/julie/Documents/Paper_codes/Paper_graphs/Methods_comparison/Figures/SM_figure_23.png", height = 10, width = 14)
 ```
 
 
@@ -481,13 +483,13 @@ graph_power_fdr <- ggplot(df_power_fdr, aes(x = target_fdr, y = power, color = K
   scale_color_manual(values=c("#6050dc","#17becf", "#8FAD86", "#993300"))  +
   scale_fill_manual(values=c("#6050dc","#17becf", "#8FAD86", "#993300")) +
   scale_linetype_manual(values=c("dotdash", "longdash", "solid", "twodash")) +
-  theme(axis.text.x = element_text(size = 20, face = "bold"),
-  axis.title.x = element_text(size = 22),
-  axis.title.y = element_text(size = 22),
-  axis.text.y = element_text(size = 20, face = "bold"),
-  plot.subtitle = element_text(size = 24, face = "bold"),
+  theme(axis.text.x = element_text(size = 22, face = "bold"),
+  axis.title.x = element_text(size = 24),
+  axis.title.y = element_text(size = 24),
+  axis.text.y = element_text(size = 22, face = "bold"),
+  plot.subtitle = element_text(size = 26, face = "bold"),
   legend.title = element_blank(),
-  legend.text = element_text(size = 24),
+  legend.text = element_text(size = 26),
   legend.justification = c("right", "center"),
   #legend.key.width = unit(0.9,"cm"),
   #legend.position = c(.4, 0.75),
@@ -498,7 +500,7 @@ graph_power_fdr <- ggplot(df_power_fdr, aes(x = target_fdr, y = power, color = K
                    panel.grid.minor = element_line(size = 0.25, linetype = 'solid',
                                 colour = "white"),
   plot.title = element_blank(),
- plot.margin = unit(c(0.6, 0, 0, 0.6), "cm")
+ plot.margin = unit(c(0.6, 0.2, 0.2, 0.6), "cm")
                    
         )
 graph_power_fdr
@@ -517,12 +519,12 @@ graph_fdp_fdr <- ggplot(df_fdp_fdr, aes(x = target_fdr, y = fdp, color = KO)) +
    scale_color_manual(values=c("#6050dc","#17becf", "#8FAD86", "#993300"))  +
    scale_fill_manual(values=c("#6050dc","#17becf", "#8FAD86", "#993300")) +
    scale_linetype_manual(values=c("dotdash", "longdash", "solid", "twodash")) +
-   theme(axis.text.x = element_text(size = 20, face = "bold"),
-   axis.title.x = element_text(size = 22),
-   axis.title.y = element_text(size = 22),
-   axis.text.y = element_text(size = 20, face = "bold"),
+   theme(axis.text.x = element_text(size = 22, face = "bold"),
+   axis.title.x = element_text(size = 24),
+   axis.title.y = element_text(size = 24),
+   axis.text.y = element_text(size = 22, face = "bold"),
    legend.title = element_blank(),
-   legend.text = element_text(size = 24),
+   legend.text = element_text(size = 26),
    legend.justification = c("right", "center"),
    legend.position = c(.35, 0.8),
    legend.key.width = unit(1.5,"cm"),
@@ -533,7 +535,7 @@ graph_fdp_fdr <- ggplot(df_fdp_fdr, aes(x = target_fdr, y = fdp, color = KO)) +
                    panel.grid.minor = element_line(size = 0.25, linetype = 'solid',
                                 colour = "white"),
    plot.title = element_blank(),
-   plot.margin = unit(c(0.6, 0, 0, 0.6), "cm")
+   plot.margin = unit(c(0.6, 0.2, 0.2, 0.6), "cm")
         ) +  guides(linetype = guide_legend(override.aes = list(linewidth = 0.9)))
 
 graph_fdp_fdr
@@ -555,12 +557,12 @@ graph_power_fdp <- ggplot(df_power_fdp, aes(x=fdp, y=power, color = KO)) +
    labs(title = "Power vs FDP, k = 10, X from X real") +
    scale_color_manual(values=c("#6050dc","#17becf", "#8FAD86", "#993300", "#DAA520"))  +
    scale_fill_manual(values=c("#6050dc","#17becf", "#8FAD86", "#993300", "#DAA520")) +
-   theme(axis.text.x = element_text(size = 20, face = "bold"),
-   axis.title.x = element_text(size = 22),
-   axis.title.y = element_text(size = 22),
-   axis.text.y = element_text(size = 20, face = "bold"),
+   theme(axis.text.x = element_text(size = 22, face = "bold"),
+   axis.title.x = element_text(size = 24),
+   axis.title.y = element_text(size = 24),
+   axis.text.y = element_text(size = 22, face = "bold"),
    legend.title = element_blank(),
-   legend.text = element_text(size = 24),
+   legend.text = element_text(size = 26),
    legend.justification = c("right", "center"),
    legend.position = c(.2, 0.7),
    #legend.key = element_rect(fill = "lightblue", color = NA),
@@ -572,7 +574,8 @@ graph_power_fdp <- ggplot(df_power_fdp, aes(x=fdp, y=power, color = KO)) +
                                 colour = "white"), 
                    panel.grid.minor = element_line(size = 0.25, linetype = 'solid',
                                 colour = "white"),
-   plot.title = element_blank()
+   plot.title = element_blank(),
+  plot.margin = unit(c(0.6, 0.2, 0.2, 0.6), "cm")
         ) 
         
 graph_power_fdp
@@ -583,16 +586,16 @@ graph_power_fdp
 legend_power_fdr <- get_legend(graph_power_fdr)
 graph_power_fdp_fdr <- ggarrange(
   graph_power_fdp,              
-  ggarrange(graph_power_fdr, graph_fdp_fdr, ncol = 2, labels = c("(b) ", "(c) "), font.label = list(size = 16)), 
+  ggarrange(graph_power_fdr, graph_fdp_fdr, ncol = 2, labels = c("(b) ", "(c) "), font.label = list(size = 18)), 
   nrow = 2, 
   labels = "(a) ",
-  font.label = list(size = 16),
+  font.label = list(size = 18),
   legend = "top",
   heights = c(1.1, 1)
   ) 
 
 
 
-ggsave(file = "/home/julie/Documents/Paper_codes/Paper_graphs/Methods_comparison/Figures/SM_figure_13.png", height = 10, width = 14)
+ggsave(file = "/home/julie/Documents/Paper_codes/Paper_graphs/Methods_comparison/Figures/SM_figure_21.png", height = 10, width = 14)
 ```
 

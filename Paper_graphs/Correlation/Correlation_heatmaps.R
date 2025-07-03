@@ -30,10 +30,10 @@ create_heatmap <- function(cor_matrix, dataset_name, save_name){
       panel.grid = element_blank(),
       plot.title = element_blank(),
       legend.position = "bottom",
-      legend.text = element_text(size = 8),  
-      legend.title = element_text(size = 9, face = "bold") 
+      legend.text = element_text(size = 10),  
+      legend.title = element_text(size = 11, face = "bold") 
     ) +
-    guides(fill = guide_colorbar(barwidth = 8, barheight = 0.5))
+    guides(fill = guide_colorbar(barwidth = 10, barheight = 0.5))
   
   #ggsave(file = str_glue("/home/julie/Documents/Paper_codes/Paper_graphs/Correlation/Figures/",save_name,".png"), width = 18, height = 20, units = "cm")
   return(HM)
@@ -50,8 +50,8 @@ HM_CRUKPAP <- create_heatmap(abs(cor(X_CRUKPAP)), "CRUKPAP Features", "X_CRUKPAP
 
 
 # Combine plots 
-final_plot <- ggarrange(HM_CRUKPAP, HM_AEGIS, HM_BC, ncol = 3, labels = c("(a) ", "(b)", "(c)"), common.legend = TRUE, font.label = list(size = 8))
+final_plot <- ggarrange(HM_CRUKPAP, HM_AEGIS, HM_BC, ncol = 3, labels = c("(a) ", "(b)", "(c)"), common.legend = TRUE, font.label = list(size = 10))
 
 
 # Save the final merged plot
-ggsave("/home/julie/Documents/Paper_codes/Paper_graphs/Correlation/Figures/SM_figure_17.png", final_plot, width = 20, height = 7, units = "cm")
+ggsave("/home/julie/Documents/Paper_codes/Paper_graphs/Correlation/Figures/SM_figure_25.png", final_plot, width = 20, height = 7, units = "cm")

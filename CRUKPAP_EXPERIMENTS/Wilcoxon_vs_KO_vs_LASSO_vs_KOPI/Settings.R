@@ -23,7 +23,8 @@ library(doParallel)
 
 # get the real X
 
-RNA.data <- read.table(file = "/home/julie/Documents/Paper_codes/Data/CRUKPAP/dat_vst_NS_no_Inel_selected.txt", head = T) 
+#RNA.data <- read.table(file = "/home/julie/Documents/Paper_codes/Data/CRUKPAP/dat_vst_NS_no_Inel_selected.txt", head = T) 
+RNA.data <- read.table(file = "/home/julie/Bureau/Data/CRUKPAP/dat_vst_NS_no_Inel_selected.txt", head = T)
 X_real <- as.matrix(RNA.data)
 n <- nrow(X_real) # Number of samples
 p <- ncol(X_real) # Number of variables

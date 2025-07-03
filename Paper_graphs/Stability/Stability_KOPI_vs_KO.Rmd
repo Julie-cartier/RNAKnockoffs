@@ -47,10 +47,10 @@ hist_KOPI0.2 <- ggplot(data_0.2, aes(x = freq, fill = status)) +
   labs(title = "Selection proportion of genes selected more than once",
        x = "Selection frequency",
        y = "Number of genes") +
- theme(axis.text.x = element_text(size = 20, face = "bold"),
-        axis.title.x = element_text(size = 24, vjust = -2),
-        axis.title.y = element_text(size = 24, vjust = +3),
-        axis.text.y = element_text(size = 20, face = "bold"),
+ theme(axis.text.x = element_text(size =26, face = "bold"),
+        axis.title.x = element_text(size =26, vjust = -2),
+        axis.title.y = element_text(size =26, vjust = +3),
+        axis.text.y = element_text(size =26, face = "bold"),
         plot.subtitle = element_text(hjust = 0),
         plot.caption = element_text(size = 12, face = "bold"),
         panel.background = element_rect(fill = "#F6F6F6"),
@@ -58,7 +58,7 @@ hist_KOPI0.2 <- ggplot(data_0.2, aes(x = freq, fill = status)) +
         panel.grid.minor = element_line(size = 0.25, linetype = 'solid', colour = "white"),
         plot.title = element_blank(),
         legend.position = "none",
-        legend.text = element_text(size = 20),  
+        legend.text = element_text(size = 26),  
         legend.title = element_blank()  , 
         plot.margin = unit(c(0.3, 0.3, 0.3, 0.3), "inches")
   ) +
@@ -74,10 +74,10 @@ hist_KOPI0.5 <- ggplot(data_0.5, aes(x = freq, fill = status)) +
   labs(title = "Selection proportion of genes selected more than once",
        x = "Selection frequency",
        y = "Number of genes") +
- theme(axis.text.x = element_text(size = 20, face = "bold"),
-        axis.title.x = element_text(size = 24, vjust = -2),
-        axis.title.y = element_text(size = 24, vjust = +3),
-        axis.text.y = element_text(size = 20, face = "bold"),
+ theme(axis.text.x = element_text(size =26, face = "bold"),
+        axis.title.x = element_text(size =26, vjust = -2),
+        axis.title.y = element_text(size =26, vjust = +3),
+        axis.text.y = element_text(size =26, face = "bold"),
         plot.subtitle = element_text(hjust = 0),
         plot.caption = element_text(size = 12, face = "bold"),
         panel.background = element_rect(fill = "#F6F6F6"),
@@ -85,7 +85,7 @@ hist_KOPI0.5 <- ggplot(data_0.5, aes(x = freq, fill = status)) +
         panel.grid.minor = element_line(size = 0.25, linetype = 'solid', colour = "white"),
         plot.title = element_blank(),
         legend.position = "none",
-        legend.text = element_text(size = 20),  
+        legend.text = element_text(size = 26),  
         legend.title = element_blank()  , 
         plot.margin = unit(c(0.3, 0.3, 0.3, 0.3), "inches")
   ) +
@@ -117,10 +117,10 @@ hist_0.2 <- ggplot(data_0.2, aes(x = freq, fill = status)) +
   labs(title = "Selection proportion of genes selected more than once",
        x = "Selection frequency",
        y = "Number of genes") +
- theme(axis.text.x = element_text(size = 20, face = "bold"),
-        axis.title.x = element_text(size = 24, vjust = -2),
-        axis.title.y = element_text(size = 24, vjust = +3),
-        axis.text.y = element_text(size = 20, face = "bold"),
+ theme(axis.text.x = element_text(size =26, face = "bold"),
+        axis.title.x = element_text(size =26, vjust = -2),
+        axis.title.y = element_text(size =26, vjust = +3),
+        axis.text.y = element_text(size =26, face = "bold"),
         plot.subtitle = element_text(hjust = 0),
         plot.caption = element_text(size = 12, face = "bold"),
         panel.background = element_rect(fill = "#F6F6F6"),
@@ -130,7 +130,7 @@ hist_0.2 <- ggplot(data_0.2, aes(x = freq, fill = status)) +
         #legend.position = c(.75, 0.7),
         legend.position = "top",
         #legend.position = "none",
-        legend.text = element_text(size = 20),  
+        legend.text = element_text(size = 26),  
         legend.title = element_blank()  , 
         plot.margin = unit(c(0.3, 0.3, 0.3, 0.3), "inches")
   ) +
@@ -147,10 +147,10 @@ hist_0.5 <- ggplot(data_0.5, aes(x = freq, fill = status)) +
   labs(title = "Selection proportion of genes selected more than once",
        x = "Selection frequency",
        y = "Number of genes") +
- theme(axis.text.x = element_text(size = 20, face = "bold"),
-        axis.title.x = element_text(size = 24, vjust = -2),
-        axis.title.y = element_text(size = 24, vjust = +3),
-        axis.text.y = element_text(size = 20, face = "bold"),
+ theme(axis.text.x = element_text(size =26, face = "bold"),
+        axis.title.x = element_text(size =26, vjust = -2),
+        axis.title.y = element_text(size =26, vjust = +3),
+        axis.text.y = element_text(size =26, face = "bold"),
         plot.subtitle = element_text(hjust = 0),
         plot.caption = element_text(size = 12, face = "bold"),
         panel.background = element_rect(fill = "#F6F6F6"),
@@ -160,7 +160,7 @@ hist_0.5 <- ggplot(data_0.5, aes(x = freq, fill = status)) +
         #legend.position = "none",
         #legend.position = c(.75, 0.7),
         legend.position = "top",
-        legend.text = element_text(size = 20),  
+        legend.text = element_text(size = 26),  
         legend.title = element_blank()  , 
         plot.margin = unit(c(0.3, 0.3, 0.3, 0.3), "inches")
   ) +
@@ -178,15 +178,15 @@ hist_0.5
 
 ```{r}
 
-graph_0.2 <- ggarrange(hist_0.2, hist_KOPI0.2, ncol = 2, labels = c("(a) : Vanilla KO, q = 0.2 ", "(b) : KOPI, q = 0.2"), label.x = 0.2, label.y = 0.9, common.legend = TRUE, font.label = list(size = 18), legend = "top") 
+graph_0.2 <- ggarrange(hist_0.2, hist_KOPI0.2, ncol = 2, labels = c("(a) : Vanilla KO, q = 0.2 ", "(b) : KOPI, q = 0.2"), label.x = 0.05, label.y = 0.9, common.legend = TRUE, font.label = list(size = 28), legend = "top") 
 
 
-graph_0.5 <- ggarrange(hist_0.5, hist_KOPI0.5, ncol = 2, labels = c("(c) : Vanilla KO, q = 0.5 ", "(d) : KOPI, q = 0.5"), label.x = 0.2, label.y = 0.9, common.legend = TRUE, font.label = list(size = 18), legend = "top") 
+graph_0.5 <- ggarrange(hist_0.5, hist_KOPI0.5, ncol = 2, labels = c("(c) : Vanilla KO, q = 0.5 ", "(d) : KOPI, q = 0.5"), label.x = 0.05, label.y = 0.9, common.legend = TRUE, font.label = list(size = 28), legend = "top") 
 
 
 combined_graph <- ggarrange(graph_0.2, graph_0.5, ncol = 1, labels = NULL)
 
-ggsave(file = "/home/julie/Documents/Paper_codes/Paper_graphs/Stability/Figures/SM_figure_12.png", plot = combined_graph, height = 14, width = 15)
+ggsave(file = "/home/julie/Documents/Paper_codes/Paper_graphs/Stability/Figures/SM_figure_15.png", plot = combined_graph, height = 16, width = 15)
 
 ```
 

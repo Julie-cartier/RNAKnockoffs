@@ -48,8 +48,6 @@ df.BC <- df.BC[, which(grepl("repl", colnames(df.BC)) == FALSE)]
 X_BC <- t(as.matrix(df.BC))
 
 
-
-
 gse=getGEO(filename="/home/julie/Documents/Paper_codes/Data/BC/GSE96058-GPL11154_series_matrix.txt.gz")
 gse_add=getGEO(filename="/home/julie/Documents/Paper_codes/Data/BC/GSE96058-GPL18573_series_matrix.txt.gz")
 

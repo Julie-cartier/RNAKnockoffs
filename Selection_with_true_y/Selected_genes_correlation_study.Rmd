@@ -70,25 +70,26 @@ HM <- ggplot(df_Sigma, aes(x = Feature1, y = Feature2, fill = Correlation)) +
   geom_tile(data = subset(df_Sigma, Location == "yes"), color = "black", linewidth = 0.2) +  
   scale_fill_gradient2(low = "#FFFFFF", mid = "#4D9DDA", high = "#081AD1", midpoint = 0.5) + 
   theme_minimal() +  
-  labs(x = "Breast Cancer", y = "", fill = "Pearson Correlation") +
+  labs(x = "", y = "", fill = "Pearson Correlation") +
   theme(
-    axis.text.x = element_text(angle = 45, hjust = 1, size = 10, face = "bold"),
-    axis.text.y = element_text(size = 10, face = "bold"),
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 14, face = "bold"),
+    axis.text.y = element_text(size = 14, face = "bold"),
     axis.ticks = element_blank(),
     panel.grid = element_blank(),
     plot.title = element_blank(),
     legend.position = "bottom",
-    legend.text = element_text(size = 8),
-    legend.title = element_text(size = 9, face = "bold")
+    legend.text = element_text(size = 14),
+    legend.title = element_text(size = 13, face = "bold")
   ) +
-  guides(fill = guide_colorbar(barwidth = 8, barheight = 0.5)) +
+  guides(fill = guide_colorbar(barwidth = 12, barheight = 0.5)) +
   scale_x_discrete(labels = custom_labels) + # labels for important genes
   scale_y_discrete(labels = custom_labels)
 
 HM
 
-ggsave("/home/julie/Bureau/Methods/Knockoffs/New_cohorts/TrueY/Figures/SGCs_genes_BC_correlation.png", width = 6, height = 6)
-ggsave("/home/julie/Documents/Presentations/Figures_draft_paper/correlation_heatmaps/SGCs_genes_BC_correlation.png", width = 6, height = 6)
+#ggsave("/home/julie/Bureau/Methods/Knockoffs/New_cohorts/TrueY/Figures/SGCs_genes_BC_correlation.png", width = 6, height = 6)
+ggsave(file = "/home/julie/Documents/Paper_codes/Paper_graphs/Correlation/Figures/SM_figures_27.png", height = 6, width = 6)
+#ggsave("/home/julie/Documents/Presentations/Figures_draft_paper/correlation_heatmaps/SGCs_genes_BC_correlation.png", width = 6, height = 6)
 
 
 ```
@@ -123,26 +124,27 @@ HM <- ggplot(df_Sigma, aes(x = Feature1, y = Feature2, fill = Correlation)) +
   geom_tile(data = subset(df_Sigma, Location == "yes"), color = "black", linewidth = 0.5) + 
   scale_fill_gradient2(low = "#FFFFFF", mid = "#4D9DDA", high = "#081AD1", midpoint = 0.5) + 
   theme_minimal() +  
-  labs(x = "Breast Cancer", y = "", fill = "Pearson Correlation") +
+  labs(x = "Breast cancer", y = "", fill = "Pearson Correlation") +
   theme(
-    axis.text.x = element_text(angle = 45, hjust = 1, size = 10, face = "bold"),
-    axis.text.y = element_text(size = 10, face = "bold"),
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 14, face = "bold"),
+    axis.text.y = element_text(size = 14, face = "bold"),
     axis.title.x = element_text(size = 14),
     axis.ticks = element_blank(),
     panel.grid = element_blank(),
     plot.title = element_blank(),
     legend.position = "bottom",
-    legend.text = element_text(size = 12),
+    legend.text = element_text(size = 14),
     legend.title = element_text(size = 13, face = "bold")
   ) +
-  guides(fill = guide_colorbar(barwidth = 8, barheight = 0.8)) +
+  guides(fill = guide_colorbar(barwidth = 12, barheight = 0.8)) +
   scale_x_discrete(labels = custom_labels) + # labels for important genes
   scale_y_discrete(labels = custom_labels)
 
 HM
 
-ggsave("/home/julie/Bureau/Methods/Knockoffs/New_cohorts/TrueY/Figures/Zoom_SGCs_genes_BC_correlation.png", width = 6, height = 6)
-ggsave("/home/julie/Documents/Presentations/Figures_draft_paper/correlation_heatmaps/Zoom_SGCs_genes_BC_correlation.png", width = 6, height = 6)
+#ggsave("/home/julie/Bureau/Methods/Knockoffs/New_cohorts/TrueY/Figures/Zoom_SGCs_genes_BC_correlation.png", width = 6, height = 6)
+ggsave(file = "/home/julie/Documents/Paper_codes/Paper_graphs/Correlation/Figures/SM_figures_28.png", height = 6, width = 6)
+#ggsave("/home/julie/Documents/Presentations/Figures_draft_paper/correlation_heatmaps/Zoom_SGCs_genes_BC_correlation.png", width = 6, height = 6)
 
 ```
 

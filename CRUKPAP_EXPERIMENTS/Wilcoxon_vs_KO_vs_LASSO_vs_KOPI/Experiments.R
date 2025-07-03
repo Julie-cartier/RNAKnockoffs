@@ -17,13 +17,14 @@ source_python("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs
 
 
 ################################################################################################################
-############################# True X (CRUKPAP), simulated y ####################################################
+############################# True X (CRUKPAP), simulated linear y ####################################################
 
 
 # pre-computed bank of 100 KO matrices obtained with the LSCIP method and X_real
 # using the KO_banks_cluster_script script (with less iterations)
 
 load("/home/julie/Documents/Paper_codes/Data/CRUKPAP/KO_partial_bank_100_CRUKPAP_LSCIP/KO_real_LSCIP_bank_part.R")
+#load("/media/julie/T5 EVO/Copie ordinateur/Paper_codes/Data/CRUKPAP/KO_partial_bank_100_CRUKPAP_LSCIP/KO_real_LSCIP_bank_part.R")
 
 list.beta <- list()
 table.perf.linear.LPLRKO <- data.frame(rep(NA, ncol(X_real)+2))
@@ -40,7 +41,7 @@ for (i in 1:100){
   beta <- beta.sample(ncol(X_real), k = 10, amplitude = 10)
   y <- y.sample(scale(X_real), beta, method = "linear", scale = FALSE, threshold = 0.5)
   
-  table.perf.part <- Knockoff_LPLR(scale(X_real, center = TRUE, scale = TRUE), X_k = X_k, y = y, beta = beta, list_target_fdr = list_target_fdr, list_lambda = list_lambda)
+  table.perf.part <- Knockoff_LPLR(scale(X_real, center = TRUE, scale = TRUE), X_k = X_k, y = y, beta = beta, list_target_fdr = list_target_fdr, list_lambda = list_lambda, method = "linear")
   table.perf.linear.LPLRKO <- cbind(table.perf.linear.LPLRKO, table.perf.part[[1]])
   
   table.perf.linear.LPLR.lambda.min[,i] <- table.perf.part[[2]]
@@ -134,5 +135,52 @@ table.perf.linear.KOPIKO <- table.perf.linear.KOPIKO[, -1]
 
 save(list.beta, table.perf.linear.KOPIKO, file = "/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/R_files/KOPI_KO_linear_table_perfx10.R")
 
+
+################################################################################################################
+############################# True X (CRUKPAP), simulated y with interactions ##################################
+
+
+# pre-computed bank of 100 KO matrices obtained with the LSCIP method and X_real
+# using the KO_banks_cluster_script script (with less iterations)
+
+#load("/home/julie/Documents/Paper_codes/Data/CRUKPAP/KO_partial_bank_100_CRUKPAP_LSCIP/KO_real_LSCIP_bank_part.R")
+load("/media/julie/T5 EVO/Copie ordinateur/Paper_codes/Data/CRUKPAP/KO_partial_bank_100_CRUKPAP_LSCIP/KO_real_LSCIP_bank_part.R")
+
+load("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Statistics_comparison/R_files/list_beta_interaction.R")
+
+list.beta <- list()
+table.perf.interaction.LPLRKO <- data.frame(rep(NA, ncol(X_real)+2))
+table.perf.interaction.wilcoxon <- data.frame(rep(NA, ncol(X_real)+2))
+table.perf.interaction.LPLR.lambda.min <- data.frame(matrix(ncol = 100, nrow = 3))
+
+tic()
+
+for (i in 1:10){
+  
+  print(i)
+  X_k <- list_KO_real_LSCIP[[i]]
+  
+  y <- list_y_interaction[[i]]
+  beta <- list_beta_interaction[[i]]
+  
+  table.perf.part <- Knockoff_LPLR(scale(X_real, center = TRUE, scale = TRUE), X_k = X_k, y = y, beta = beta, list_target_fdr = list_target_fdr, list_lambda = list_lambda, method = "interaction")
+  table.perf.interaction.LPLRKO <- cbind(table.perf.interaction.LPLRKO, table.perf.part[[1]])
+  
+  table.perf.interaction.LPLR.lambda.min[,i] <- table.perf.part[[2]]
+  
+  table.perf.part <- DE_Wilcoxon_BH(scale(X_real), y = y, beta = beta, list_target_fdr = list_target_fdr_wilcoxon, method = "interaction")
+  table.perf.interaction.wilcoxon <- cbind(table.perf.interaction.wilcoxon, table.perf.part)
+  
+  list.beta[[i]] <- beta
+}
+
+toc()
+
+table.perf.interaction.LPLRKO<- table.perf.interaction.LPLRKO[, -1]
+table.perf.interaction.wilcoxon <- table.perf.interaction.wilcoxon[, -1]
+rownames(table.perf.interaction.LPLR.lambda.min) <- c("lambda.min", "FDP", "Power")
+
+
+save(list.beta, table.perf.interaction.LPLRKO, table.perf.interaction.wilcoxon, table.perf.interaction.LPLR.lambda.min, file = "/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/R_files/LPLR_KO_BH_interaction_table_perfx10.R")
 
 

@@ -159,13 +159,13 @@ graph_power_fdr <- ggplot(df_power_fdr, aes(x = target_fdr, y = power, color = C
   scale_color_manual(values=c("#00c8f4","#c34a36"), name = "Cohorts:")  +
   scale_fill_manual(values=c("#00c8f4","#c34a36"), name = "Cohorts:") +
   scale_linetype_manual(values=c("twodash", "solid"), name = "") +
-  theme(axis.text.x = element_text(size = 16, face = "bold"),
-  axis.title.x = element_text(size = 18),
-  axis.title.y = element_text(size = 18),
-  axis.text.y = element_text(size = 16, face = "bold"),
-  plot.subtitle = element_text(size = 20, face = "bold"),
-  legend.title = element_text(size = 18),
-  legend.text = element_text(size = 18),
+  theme(axis.text.x = element_text(size = 24, face = "bold"),
+  axis.title.x = element_text(size = 26),
+  axis.title.y = element_text(size = 26),
+  axis.text.y = element_text(size = 24, face = "bold"),
+  plot.subtitle = element_text(size = 26, face = "bold"),
+  legend.title = element_text(size = 26),
+  legend.text = element_text(size = 26),
   legend.justification = c("right", "center"),
   legend.position = "top",
   legend.key.width = unit(1.5,"cm"),
@@ -180,7 +180,7 @@ graph_power_fdr <- ggplot(df_power_fdr, aes(x = target_fdr, y = power, color = C
         ) +  guides(linetype = guide_legend(override.aes = list(linewidth = 0.9)), linetype = guide_legend(order = 1))
 graph_power_fdr
 
-ggsave(file = "/home/julie/Documents/Paper_codes/Paper_graphs/Correlation/Figures/Figure_5.png", height = 7, width = 14)  # saved for illustration purpose
+ggsave(file = "/home/julie/Documents/Paper_codes/Paper_graphs/Correlation/Figures/Figure_4.png", height = 7, width = 14)  # saved for illustration purpose
 
 graph_fdp_fdr <- ggplot(df_fdp_fdr, aes(x = target_fdr, y = fdp, color = Cohort)) + 
    ylab("FDP")+ 
@@ -192,23 +192,25 @@ graph_fdp_fdr <- ggplot(df_fdp_fdr, aes(x = target_fdr, y = fdp, color = Cohort)
    scale_color_manual(values=c("#00c8f4","#c34a36"), name = "Cohorts:")  +
    scale_fill_manual(values=c("#00c8f4","#c34a36"), name = "Cohorts:") +
    scale_linetype_manual(values=c("twodash", "solid"), name = "") +
-   theme(axis.text.x = element_text(size = 16, face = "bold"),
-   axis.title.x = element_text(size = 18),
-   axis.title.y = element_text(size = 18),
-   axis.text.y = element_text(size = 16, face = "bold"),
-   legend.title = element_text(size = 18),
-   legend.text = element_text(size = 18),
+   theme(axis.text.x = element_text(size = 22, face = "bold"),
+   axis.title.x = element_text(size = 24),
+   axis.title.y = element_text(size = 24),
+   axis.text.y = element_text(size = 22, face = "bold"),
+   legend.title = element_text(size = 24),
+   legend.text = element_text(size = 24),
    legend.justification = c("right", "center"),
-   legend.position = c(.3, 0.8),
+   legend.position = "top",
    legend.key.width = unit(1.5,"cm"),
-   legend.box = "horizontal", 
+   #legend.box = "horizontal", 
    plot.subtitle = element_text(size = 18, face = "bold"),
    panel.background = element_rect(fill = "#F6F6F6"),
                    panel.grid.major = element_line(linewidth = 0.5, linetype = 'solid',
                                 colour = "white"), 
                    panel.grid.minor = element_line(linewidth = 0.25, linetype = 'solid',
                                 colour = "white"),
-   plot.title = element_blank() 
+   plot.title = element_blank(),
+   plot.margin = unit(c(0.6, 0.2, 0.2, 0.6), "cm")
+                   
         ) +  guides(linetype = guide_legend(override.aes = list(linewidth = 0.9)), linetype = guide_legend(order = 1))
 
 graph_fdp_fdr
@@ -225,19 +227,18 @@ graph_power_fdp <- ggplot(df_power_fdp, aes(x=fdp, y=power, color = KO)) +
    geom_point(aes(shape = KO, fill = KO, color = KO), size = 3) +
    scale_shape_manual(values = c(22,23,25, 24)) +  # Adjust the shape values according to your preference
    geom_ribbon(aes(ymin = power - std, ymax = power + std, group = KO, fill = KO), alpha = 0.15, colour = NA) +
-   geom_line(data = subset(df_power_fdp, KO == 'LASSO'), aes(group = KO))+
    #geom_line(aes(group = KO), linewidth = 1.5)+
    labs(title = "Power vs FDP, k = 10, X from X real") +
    scale_color_manual(values=c("#00c8f4", "#00c8f4","#c34a36", "#c34a36"))  +
    scale_fill_manual(values=c("#00c8f4", "#00c8f4","#c34a36", "#c34a36")) +
-   theme(axis.text.x = element_text(size = 16, face = "bold"),
-   axis.title.x = element_text(size = 18),
-   axis.title.y = element_text(size = 18),
-   axis.text.y = element_text(size = 16, face = "bold"),
+   theme(axis.text.x = element_text(size = 22, face = "bold"),
+   axis.title.x = element_text(size = 24),
+   axis.title.y = element_text(size = 24),
+   axis.text.y = element_text(size = 22, face = "bold"),
    legend.title = element_blank(),
-   legend.text = element_text(size = 18),
+   legend.text = element_text(size = 24),
    legend.justification = c("right", "center"),
-   legend.position = c(.96, 0.2),
+   legend.position = "top",
    #legend.key = element_rect(fill = "lightblue", color = NA),
   # Modifier la taille et la largeur des signes de la légende
     #legend.key.size = unit(1.5, "cm"),
@@ -247,7 +248,9 @@ graph_power_fdp <- ggplot(df_power_fdp, aes(x=fdp, y=power, color = KO)) +
                                 colour = "white"), 
                    panel.grid.minor = element_line(linewidth = 0.25, linetype = 'solid',
                                 colour = "white"),
-   plot.title = element_blank()
+   plot.title = element_blank(),
+  plot.margin = unit(c(0.6, 0.2, 0.2, 0.6), "cm")
+                   
         )
         
 graph_power_fdp
@@ -263,11 +266,11 @@ graph_power_fdp
 library(ggpubr)
 
 legend_power_fdr <- get_legend(graph_power_fdr)
-graph_power_fdp_fdr <- ggarrange(graph_power_fdp, graph_fdp_fdr, nrow = 2, ncol = 1,labels = c("(a)","(b)"), font.label = list(size = 12)) 
+graph_power_fdp_fdr <- ggarrange(graph_power_fdp, graph_fdp_fdr, nrow = 2, ncol = 1,labels = c("(a) ","(b) "), font.label = list(size = 18)) 
 
 
 
-ggsave(file = "/home/julie/Documents/Paper_codes/Paper_graphs/Correlation/Figures/SM_figures_XX.png", height = 10, width = 15)
+ggsave(file = "/home/julie/Documents/Paper_codes/Paper_graphs/Correlation/Figures/SM_figures_26.png", height = 12, width = 15)
 
 ```
 
@@ -353,13 +356,13 @@ graph_power_cor <- ggplot(df_power_cor, aes(x = mean.cor, y = mean.power, color 
   scale_color_manual(values = c("#875580", "#E6D030", "#875580", "#c34a36")) +
   scale_fill_manual(values = c("#875580", "#E6D030", "#875580", "#c34a36")) +
   theme(
-    axis.text.x = element_text(size = 16, face = "bold"),
-    axis.title.x = element_text(size = 18),
-    axis.title.y = element_text(size = 18),
-    axis.text.y = element_text(size = 16, face = "bold"),
+    axis.text.x = element_text(size = 24, face = "bold"),
+    axis.title.x = element_text(size = 28),
+    axis.title.y = element_text(size = 28),
+    axis.text.y = element_text(size = 26, face = "bold"),
     plot.subtitle = element_text(size = 20, face = "bold"),
-    legend.title = element_text(size = 18),
-    legend.text = element_text(size = 18),
+    legend.title = element_text(size = 28),
+    legend.text = element_text(size = 28),
     legend.justification = c("right", "center"),
     legend.position = c(0.95 ,0.9),
     legend.key.width = unit(1.2,"cm"),
@@ -376,7 +379,7 @@ graph_power_cor <- ggplot(df_power_cor, aes(x = mean.cor, y = mean.power, color 
     inherit.aes = FALSE,
     color = "black",
     fontface = "bold",
-    size = 5,
+    size = 10,
     hjust = -0.4
   )  + 
   labs(
@@ -396,7 +399,7 @@ graph_power_cor <- ggplot(df_power_cor, aes(x = mean.cor, y = mean.power, color 
 graph_power_cor
 
 
-ggsave(file = "/home/julie/Documents/Paper_codes/Paper_graphs/Correlation/Figures/Figure_6.png", height = 7, width = 14)
+ggsave(file = "/home/julie/Documents/Paper_codes/Paper_graphs/Correlation/Figures/Figure_5.png", height = 7, width = 14)
 
 ```
 

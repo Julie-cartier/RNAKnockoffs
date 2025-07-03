@@ -1,0 +1,241 @@
+---
+title: "KOPI_KO_LPLR_interaction_draft_paper"
+output: html_document
+---
+
+In this document, we make script to genrate plots for the comparison between different variable selection methods (LASSO, KO, Wilcoxon)
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+source('/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/Settings.R')
+source('/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/Functions.R')
+```
+
+```{r}
+
+load('/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/R_files/LPLR_KO_BH_interaction_table_perfx10.R')
+
+```
+
+
+
+
+# KOPI vs KO
+
+
+
+```{r data frame maker}
+
+df_done_synth_interaction = df_perf_maker(table.perf.interaction.LPLRKO, list_target_fdr, stats_names = c("KO", "LPLR"), list_lambda = list_lambda, n.rep = 10) # make sure that the order 
+
+```
+
+# Is the FDP controlled ?
+
+```{r  Curves in the interaction setting }
+df_fdp_fdr_tot <- df_done_synth_interaction[[2]] 
+
+df_fdp_fdr <- df_fdp_fdr_tot[df_fdp_fdr_tot$KO != "LPLR", ]
+
+graph_fdp_fdr_KO <- ggplot(df_fdp_fdr, aes(x = target_fdr, y = fdp, color = KO)) + 
+   ylab("FDP")+ 
+   xlab("Target FDR (q)") + 
+   ylim(c(-0.25, 1.22)) + 
+   geom_ribbon(aes(ymin = fdp - std,ymax = fdp + std, group = KO, fill = KO), alpha = 0.15, colour = NA) + 
+   geom_line(aes(group = KO), linewidth = 1.5)+
+   geom_abline(intercept = 0, slope = 1, color="black", linetype="dashed", linewidth = 1)+
+   scale_color_manual(values=c("#17becf"))  +
+   scale_fill_manual(values=c("#17becf")) +
+   theme(axis.text.x = element_text(size = 22, face = "bold"),
+   axis.title.x = element_text(size = 24),
+   axis.title.y = element_text(size = 24),
+   axis.text.y = element_text(size = 22, face = "bold"),
+   legend.title = element_blank(),
+   legend.text = element_text(size = 26),
+   legend.justification = c("right", "center"),
+   legend.position = c(.4, 0.7),
+   plot.subtitle = element_text(size = 18, face = "bold"),
+   panel.background = element_rect(fill = "#F6F6F6"),
+                   panel.grid.major = element_line(size = 0.5, linetype = 'solid',
+                                colour = "white"), 
+                   panel.grid.minor = element_line(size = 0.25, linetype = 'solid',
+                                colour = "white"),
+   plot.title = element_blank(),
+   plot.margin = unit(c(0.6, 0.2, 0.2, 0.6), "cm")
+        )
+
+graph_fdp_fdr_KO
+
+
+
+df_done_synth_interaction_wilcoxon = df_perf_maker(table.perf.interaction.wilcoxon, list_target_fdr_wilcoxon, stats_names = c("Wilcoxon "), n.rep = 10)
+
+
+df_fdp_fdr_wilcoxon <- df_done_synth_interaction_wilcoxon[[2]]
+
+
+ref_line <- data.frame(target_fdr = 10^seq(log10(min(df_fdp_fdr_wilcoxon$target_fdr)),
+                                           log10(max(df_fdp_fdr_wilcoxon$target_fdr)),
+                                           length.out = 100))
+ref_line$fdp <- ref_line$target_fdr  
+
+
+graph_fdp_fdr_wilcoxon <- ggplot(df_fdp_fdr_wilcoxon, aes(x = target_fdr, y = fdp, color = KO)) +
+   ylab("FDP")+ 
+   xlab("Target FDR (q)") + 
+   ylim(c(-0.25, 1.22)) + 
+   scale_x_log10() +
+   geom_ribbon(aes(ymin = fdp - std,ymax = fdp + std, group = KO, fill = KO), alpha = 0.15, colour = NA) + 
+   geom_point(aes(shape = KO), size = 3) +
+   geom_line(aes(group = KO), linewidth = 1.5)+
+   geom_line(data = ref_line, aes(x = target_fdr, y = fdp), color = "black", linetype = "dashed", linewidth = 1) +
+   #geom_abline(intercept = 0, slope = 1, color="black", linetype="dashed", linewidth = 1)+
+   scale_color_manual(values=c("#a28823"))  +
+   scale_fill_manual(values=c("#a28823")) +
+   theme(axis.text.x = element_text(size = 22, face = "bold"),
+   axis.title.x = element_text(size = 24),
+   axis.title.y = element_text(size = 24),
+   axis.text.y = element_text(size = 22, face = "bold"),
+   legend.title = element_blank(),
+   legend.text = element_text(size = 26),
+   legend.justification = c("right", "center"),
+   legend.position = c(.4, 0.7),
+   plot.subtitle = element_text(size = 18, face = "bold"),
+   panel.background = element_rect(fill = "#F6F6F6"),
+                   panel.grid.major = element_line(size = 0.5, linetype = 'solid',
+                                colour = "white"), 
+                   panel.grid.minor = element_line(size = 0.25, linetype = 'solid',
+                                colour = "white"),
+   plot.title = element_blank(),
+   plot.margin = unit(c(0.6, 0.2, 0.2, 0.6), "cm")
+        )
+graph_fdp_fdr_wilcoxon
+
+
+
+graph_fdp_fdr <- ggarrange(graph_fdp_fdr_KO, graph_fdp_fdr_wilcoxon, ncol = 2, labels = c("(a) ", "(b)"), font.label = list(size = 12))
+
+
+ggsave(file = "/home/julie/Documents/Paper_codes/Paper_graphs/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/Figures/SM_figure_17.png", height = 5, width = 14)
+```
+
+# Data visualisation
+
+```{r}
+
+# Get data
+
+df_done_boxplot_LPLRKO = df_perf_maker_boxplot(table.perf.interaction.LPLRKO, list_target_fdr = list_target_fdr, stats_names = c("KO (LCD)", "LASSO"), n.rep = 10, length_bin = 0.1)
+
+df_done_boxplot_wilcoxon = df_perf_maker_boxplot(table.perf.interaction.wilcoxon, list_target_fdr = list_target_fdr_wilcoxon, stats_names = c("Wilcoxon "), n.rep = 10, length_bin = 0.1)
+
+#Bind results
+
+df_boxplot <- rbind(df_done_boxplot_LPLRKO, df_done_boxplot_wilcoxon)
+
+df_aggregated <- summarise(group_by(df_boxplot, FDP_levels, KO), Count = n(), .groups = "drop") # get the count of points
+df_aggregated <- mutate(group_by(df_aggregated, KO), Normalized_Count = Count*10 / sum(Count)) # Normalized count by the length of parameters sequence (list_target_fdr, list_lambda, ...)
+df_means <- summarise(group_by(df_boxplot, FDP_levels, KO), Mean = mean(Power), .groups = "drop") # get the mean power over an FDP interval
+
+
+df_aggregated_sup <- data.frame(FDP_levels = rep(c("[0.1,0.2)", "[0.2,0.3)", "[0.3,0.4)", "[0.4,0.5)", "[0.5,0.6)", "[0.1,0.2)")), KO = rep("No discoveries ", 3), Count = 0, Normalized_Count = 0)
+df_aggregated = rbind(df_aggregated, df_aggregated_sup)
+
+df_means_sup <- data.frame(FDP_levels = rep(c("[0.1,0.2)", "[0.2,0.3)", "[0.3,0.4)", "[0.4,0.5)", "[0.5,0.6)", "[0.1,0.2)")), KO = rep("No discoveries ", 6), Mean = 0)
+df_means <- rbind(df_means, df_means_sup)
+
+
+
+count_plot <- ggplot(df_aggregated, aes(x = FDP_levels, y = Normalized_Count, fill = KO, color = KO)) +
+  geom_bar(stat = "identity", position = position_dodge(0.8), width = 0.6, alpha = 0.8) +
+  ylim(0, 15) +
+  geom_text(aes(label = round(Normalized_Count, 2)), # text/labels adjustments
+            position = position_dodge(0.8), 
+            vjust = -0.5,  
+            size = 5.,     
+            angle = 20,    
+            color = "black",
+            fontface = "bold") +
+  scale_fill_manual(values = c("#17becf", "#7c6fb0", "#D3D3D3", "#a28823")) +
+  scale_color_manual(values = c("#17becf", "#7c6fb0", "#D3D3D3", "#a28823")) +
+  labs(
+    x = NULL,  # Remove x-axis label to align with median plot
+    y = "Normalized count",
+    fill = "Methods",
+    shape = "Methods",  # Shape legend for median plot
+    color = "Methods"   # Color legend for median plot
+  ) +
+  theme(
+    axis.text.x = element_text(size = 22, face = "bold", angle = 45, hjust = 1),
+    axis.title.x = element_text(size = 24),
+    axis.title.y = element_text(size = 24, vjust = 2),
+    axis.text.y = element_text(size = 22, face = "bold"),
+    legend.position = c(0.94, 0.6),  
+    legend.title = element_blank(),
+    legend.text = element_text(size = 24),
+    legend.justification = c("right", "center"),
+    legend.spacing.x = unit(0.7, "cm"),
+    panel.background = element_rect(fill = "#F6F6F6"),
+    panel.grid.major = element_line(size = 0.5, linetype = 'solid', colour = "white"),
+    panel.grid.minor = element_line(size = 0.25, linetype = 'solid', colour = "white"),
+    plot.title = element_blank()
+  ) + guides(#  legend guide
+    color = guide_legend(ncol = 3),  
+    fill = guide_legend(ncol = 3),   
+    shape = guide_legend(ncol = 3)  
+  ) 
+
+# Mean plot 
+
+mean_comp <- ggplot(df_aggregated, aes(x = FDP_levels, y = Power, fill = KO, color = KO, shape = KO, size = KO)) +
+  geom_point(data = df_means, aes(x = FDP_levels, y = Mean), stroke = 1.9, position = position_dodge(width = 0.8)) +
+  scale_color_manual(values = c("#17becf", "#7c6fb0", "#a28823", "#D3D3D3")) +
+  scale_fill_manual(values = c("#17becf", "#7c6fb0", "#a28823", "#D3D3D3")) +
+  scale_shape_manual(values = c(3, 4, 8, 16)) +
+  scale_size_manual(values = c(5, 5, 5, 2)) +# Shapes for KO methods
+  ylim(-0.1, 1) +
+  labs(
+    x = "FDP",
+    y = "Power (mean)",
+    fill = "Methods",
+    shape = "Methods",  
+    color = "Methods" ,
+    size = "Methods"
+  ) +
+  theme(
+    axis.text.x = element_text(size = 22, face = "bold", angle = 45, hjust = 1),
+    axis.title.x = element_text(size = 24),
+    axis.title.y = element_text(size = 26),
+    axis.text.y = element_text(size = 22, face = "bold"),
+    legend.position = c(0.45, 0.9),  
+    legend.title = element_blank(),
+    legend.text = element_text(size = 26),
+    legend.justification = c("right", "center"),
+    legend.spacing.x = unit(0.7, "cm"),
+    panel.background = element_rect(fill = "#F6F6F6"),
+    panel.grid.major = element_line(size = 0.5, linetype = 'solid', colour = "white"),
+    panel.grid.minor = element_line(size = 0.25, linetype = 'solid', colour = "white"),
+    plot.title = element_blank()
+  ) + guides(# legend guide
+    color = guide_legend(ncol = 3), 
+    fill = guide_legend(ncol = 3),   
+    shape = guide_legend(ncol = 3)   
+  )
+
+
+# Combine plots
+
+combined_plot <- count_plot / mean_comp +
+  plot_layout(axes = "collect", heights = c(1, 2))  
+
+combined_plot
+
+ggsave(file = "/home/julie/Documents/Paper_codes/Paper_graphs/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/Figures/SM_figure_16.png", height = 10, width = 16)
+
+```
+
+
+
