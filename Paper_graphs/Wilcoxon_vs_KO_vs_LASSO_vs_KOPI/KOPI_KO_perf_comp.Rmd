@@ -16,7 +16,7 @@ source('/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_
 ```{r}
 
 load("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/R_files/KOPI_KO_linear_table_perfx10.R")
-
+load("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/R_files/KOPI_KO_comp_0.5.linear_table_perfx10.R")
 ```
 
 
@@ -24,6 +24,8 @@ load("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LA
 ```{r data frame maker}
 
 df_done_KOPIKO_linear <- df_perf_maker(table.perf.linear.KOPIKO, list_target_fdr = list_target_fdr, stats_names = c("KO ", "KOPI"), n.rep = 100)
+
+
 
 ```
 
@@ -91,8 +93,8 @@ count_plot <- ggplot(df_aggregated, aes(x = FDP_levels, y = Count, fill = KO, co
             angle = 0,     
             color = "black",
             fontface = "bold") +
-  scale_fill_manual(values = c("#95b0b4","#17becf")) +
-  scale_color_manual(values = c("#95b0b4", "#17becf")) +
+  scale_fill_manual(values = c("#17becf", "#95b0b4")) +
+  scale_color_manual(values = c("#17becf", "#95b0b4")) +
   labs(
     x = NULL,  
     y = "Count",
@@ -124,9 +126,9 @@ count_plot <- ggplot(df_aggregated, aes(x = FDP_levels, y = Count, fill = KO, co
 
 mean_comp <- ggplot(df_aggregated, aes(x = FDP_levels, y = Power, size = Count, fill = KO, color = KO, shape = KO)) +
   geom_point(data = df_means, aes(x = FDP_levels, y = Mean), size = 5, stroke = 1.9, position = position_dodge(width = 0.8)) +
-  scale_color_manual(values = c("#95b0b4", "#17becf")) +
-  scale_fill_manual(values = c("#95b0b4", "#17becf")) +
-  scale_shape_manual(values = c(13, 3)) + 
+  scale_color_manual(values = c("#17becf", "#95b0b4")) +
+  scale_fill_manual(values = c("#17becf", "#95b0b4")) +
+  scale_shape_manual(values = c(3, 13)) + 
   ylim(-0.1, 1) +
   labs(
     x = "FDP",
@@ -163,3 +165,194 @@ combined_plot
 
 ggsave(file = "/home/julie/Documents/Paper_codes/Paper_graphs/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/Figures/SM_figure_13.png", height = 10, width = 16)
 ```
+
+
+
+
+###################################### Idem, with alpha = 0.5 ##############################################################
+
+
+
+```{r   }
+
+df_done_KOPIKO_linear <- df_perf_maker(table.perf.linear.KOPIKO, list_target_fdr = list_target_fdr, stats_names = c("KO ", "KOPI, \u03B1 = 0.1"), n.rep = 100)
+df_done_KOPI_0.5_linear <- df_perf_maker(table.perf.linear.KOPI.0.5_comp, list_target_fdr = list_target_fdr, stats_names = c("KOPI, \u03B1 = 0.5"), n.rep = 100)
+df_fdp_fdr <- rbind(df_done_KOPIKO_linear[[2]], df_done_KOPI_0.5_linear[[2]]) 
+
+graph_fdp_fdr_KO <- ggplot(df_fdp_fdr, aes(x = target_fdr, y = fdp, color = KO)) + 
+   ylab("FDP")+ 
+   xlab("Target FDR (q)") + 
+   ylim(c(-0.25, 1.22)) + 
+   geom_ribbon(aes(ymin = fdp - std,ymax = fdp + std, group = KO, fill = KO), alpha = 0.3, colour = NA) + 
+   geom_line(aes(group = KO, linetype = KO), linewidth = 1.5)+
+   geom_abline(intercept = 0, slope = 1, color="black", linetype="dashed", linewidth = 1)+
+   scale_color_manual(values=c("#17becf", "#95b0b4", "#836381"))  +
+   scale_fill_manual(values=c("white", "#95b0b4", "#836381")) +
+   scale_linetype_manual(values=c("dotted", "solid", "dashed")) +
+   theme(axis.text.x = element_text(size = 22, face = "bold"),
+   axis.title.x = element_text(size = 24),
+   axis.title.y = element_text(size = 24),
+   axis.text.y = element_text(size = 22, face = "bold"),
+   legend.title = element_blank(),
+   legend.text = element_text(size = 26),
+   legend.justification = c("right", "center"),
+   legend.position = c(.55, 0.8),
+   plot.subtitle = element_text(size = 18, face = "bold"),
+   legend.key.width = unit(1.5,"cm"),
+   panel.background = element_rect(fill = "#F6F6F6"),
+                   panel.grid.major = element_line(size = 0.5, linetype = 'solid',
+                                colour = "white"), 
+                   panel.grid.minor = element_line(size = 0.25, linetype = 'solid',
+                                colour = "white"),
+   plot.title = element_blank(),
+   plot.margin = unit(c(0.6, 0.2, 0.2, 0.6), "cm")
+        )
+
+graph_fdp_fdr_KO
+
+
+
+
+ggsave(file = "/home/julie/Documents/Paper_codes/Paper_graphs/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/Figures/SM_figure_14_rev.png", height = 5, width = 7)
+
+
+df_power_fdr <- rbind(df_done_KOPIKO_linear[[1]], df_done_KOPI_0.5_linear[[1]]) 
+
+graph_fdp_fdr_KO <- ggplot(df_power_fdr, aes(x = target_fdr, y = power, color = KO)) + 
+   ylab("Power")+ 
+   xlab("Target FDR (q)") + 
+   ylim(c(-0.25, 1.22)) + 
+   geom_ribbon(aes(ymin = power - std,ymax = power + std, group = KO, fill = KO), alpha = 0.3, colour = NA) + 
+   geom_line(aes(group = KO, linetype = KO), linewidth = 1.5)+
+   #geom_abline(intercept = 0, slope = 1, color="black", linetype="dashed", linewidth = 1)+
+   scale_color_manual(values=c("#17becf", "#95b0b4", "#836381"))  +
+   scale_fill_manual(values=c("white", "#95b0b4", "#836381")) +
+   scale_linetype_manual(values=c("dotted", "solid", "dashed")) +
+   theme(axis.text.x = element_text(size = 22, face = "bold"),
+   axis.title.x = element_text(size = 24),
+   axis.title.y = element_text(size = 24),
+   axis.text.y = element_text(size = 22, face = "bold"),
+   legend.title = element_blank(),
+   legend.text = element_text(size = 26),
+   legend.justification = c("right", "center"),
+   legend.position = c(.9, 0.2),
+   plot.subtitle = element_text(size = 18, face = "bold"),
+   legend.key.width = unit(1.5,"cm"),
+   panel.background = element_rect(fill = "#F6F6F6"),
+                   panel.grid.major = element_line(size = 0.5, linetype = 'solid',
+                                colour = "white"), 
+                   panel.grid.minor = element_line(size = 0.25, linetype = 'solid',
+                                colour = "white"),
+   plot.title = element_blank(),
+   plot.margin = unit(c(0.6, 0.2, 0.2, 0.6), "cm")
+        )
+
+graph_fdp_fdr_KO
+
+
+
+
+ggsave(file = "/home/julie/Documents/Paper_codes/Paper_graphs/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/Figures/SM_figure_14_rev2.png", height = 5, width = 7)
+```
+
+
+# KOPI vs KO
+
+
+```{r Boxplots and mean plots for the comparison}
+
+df_boxplot_KOPIKO = df_perf_maker_boxplot(table.perf.linear.KOPIKO, list_target_fdr = list_target_fdr, stats_names = c("KO ", "KOPI, \u03B1 = 0.1"), n.rep = 100, length_bin = 0.1)
+df_boxplot_KOPI_0.5 = df_perf_maker_boxplot(table.perf.linear.KOPI.0.5_comp, list_target_fdr = list_target_fdr, stats_names = c("KOPI, \u03B1 = 0.5"), n.rep = 100, length_bin = 0.1)
+
+df_boxplot_extended <- rbind(df_boxplot_KOPIKO, df_boxplot_KOPI_0.5)
+
+df_aggregated <- summarise(group_by(df_boxplot_extended, FDP_levels, KO), Count = n(), .groups = "drop")
+df_means <- summarise(group_by(df_boxplot_extended, FDP_levels, KO), Mean = mean(Power), .groups = "drop")
+
+count_plot <- ggplot(df_aggregated, aes(x = FDP_levels, y = Count, fill = KO, color = KO)) +
+  geom_bar(stat = "identity", position = position_dodge(0.8), width = 0.6, alpha = 0.8) +
+  ylim(0, 3900) +
+  geom_text(aes(label = Count), # label formatting
+            position = position_dodge(0.8), 
+            vjust = -0.5,  
+            size = 5.5,      
+            angle = 25,     
+            color = "black",
+            fontface = "bold") +
+  scale_fill_manual(values = c("#17becf", "#95b0b4", "#836381")) +
+  scale_color_manual(values = c("#17becf", "#95b0b4", "#836381")) +
+  labs(
+    x = NULL,  
+    y = "Count",
+    fill = "Methods",
+    shape = "Methods", 
+    color = "Methods"   
+  ) +
+  theme(
+    axis.text.x = element_text(size = 22, face = "bold", angle = 45, hjust = 1),
+    axis.title.x = element_text(size = 24),
+    axis.title.y = element_text(size = 24, vjust = 2),
+    axis.text.y = element_text(size = 22, face = "bold"),
+    legend.position = c(0.96, 0.85),  # Show legend at the top for median plot
+    legend.title = element_blank(),
+    legend.text = element_text(size = 26),
+    legend.justification = c("right", "center"),
+    legend.spacing.x = unit(0.7, "cm"),
+    panel.background = element_rect(fill = "#F6F6F6"),
+    panel.grid.major = element_line(size = 0.5, linetype = 'solid', colour = "white"),
+    panel.grid.minor = element_line(size = 0.25, linetype = 'solid', colour = "white"),
+    plot.title = element_blank()
+  ) + guides(# legend formatting
+    color = guide_legend(ncol = 3),  
+    fill = guide_legend(ncol = 3),  
+    shape = guide_legend(ncol = 3)   
+  ) 
+
+# Mean plot
+
+mean_comp <- ggplot(df_aggregated, aes(x = FDP_levels, y = Power, size = Count, fill = KO, color = KO, shape = KO)) +
+  geom_point(data = df_means, aes(x = FDP_levels, y = Mean), size = 5, stroke = 1.9, position = position_dodge(width = 0.8)) +
+  scale_color_manual(values = c("#17becf", "#95b0b4", "#836381")) +
+  scale_fill_manual(values = c("#17becf", "#95b0b4", "#836381")) +
+  scale_shape_manual(values = c(3, 13, 12)) + 
+  ylim(-0.1, 1) +
+  labs(
+    x = "FDP",
+    y = "Power (mean)",
+    fill = "Methods",
+    shape = "Methods",  
+    color = "Methods"   
+  ) +
+  theme(
+    axis.text.x = element_text(size = 22, face = "bold", angle = 45, hjust = 1),
+    axis.title.x = element_text(size = 24),
+    axis.title.y = element_text(size = 26),
+    axis.text.y = element_text(size = 22, face = "bold"),
+    legend.position = c(0.55, 0.9), 
+    legend.title = element_blank(),
+    legend.text = element_text(size = 26),
+    legend.justification = c("right", "center"),
+    legend.spacing.x = unit(0.7, "cm"),
+    panel.background = element_rect(fill = "#F6F6F6"),
+    panel.grid.major = element_line(size = 0.5, linetype = 'solid', colour = "white"),
+    panel.grid.minor = element_line(size = 0.25, linetype = 'solid', colour = "white"),
+    plot.title = element_blank()
+  ) + guides( # legend formatting
+    color = guide_legend(ncol = 3),  
+    fill = guide_legend(ncol = 3),   
+    shape = guide_legend(ncol = 3)  
+  )
+
+# Combine the two plots 
+combined_plot <- count_plot / mean_comp +
+  plot_layout(axes = "collect", heights = c(1, 2))  
+
+combined_plot
+
+ggsave(file = "/home/julie/Documents/Paper_codes/Paper_graphs/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/Figures/SM_figure_13_rev.png", height = 10, width = 16)
+```
+
+
+
+
+

@@ -406,6 +406,68 @@ Add_KOPI_LPLR_oracle <- function(X, D_draws_X_k, y, beta, list_target_FDP, k_max
   
 }
 
+# Selection with KOPI
+
+Add_KOPI <- function(X, D_draws_X_k, y, beta, list_target_FDP, k_max, alpha = 0.1,  B = 1000){
+  
+  # X: data matrix of size nxp
+  # D_draw_X_k : number of KO matrices used in the aggregation scheme
+  # y: outcomes vector 
+  # beta: vector of size p (coefficients)
+  # list_target_FDP : FDP targets for KOPI
+  # k_max : KOPI parameter (number of thresholds in the threshold family (KOPI))
+  # alpha : level of confidence (KOPI)
+  # B : KOPI parameter (Number of Monte Carlo simulations (KOPI))
+  
+  n <- dim(X)[1]
+  p <- dim(X)[2]
+  
+  mat.features <- data.frame(matrix(0, ncol = length(list_target_FDP), nrow = p+2 ))
+  
+  ### KOPI Settings ###
+  
+  Draws <- length(D_draws_X_k)
+  
+  # create KO_stats (matrix of size D x p)
+  
+  KO_stats <- create_KO_stats(X, D_draws_X_k, y, num_cores = 10)
+  KO_stats_py <- r_to_py(KO_stats)
+  
+  # get pi0_hmean and learned_tpl_hmean
+  
+  result <- create_hmean_p_values_learned_tpl(p = as.integer(p), draws = as.integer(Draws), B = as.integer(B), n_jobs = as.integer(10))
+  
+  pi0_hmean <- result[[1]]
+  learned_tpl_hmean <- result[[2]]
+  
+  
+  for (i in 1:length(list_target_FDP)){
+    
+    q <- list_target_FDP[i]
+    
+    set_selected <- KOPI_given_all(ko_stats = KO_stats_py, draws = Draws, alpha = alpha, target_fdp = q, learned_tpl_hmean = learned_tpl_hmean, pi0_hmean = pi0_hmean, k_max = as.integer(k_max))
+    selected_KOPI <- set_selected[[1]] + 1
+    
+    
+    # Data frame creator
+    
+    mat.features[1, i] <- fdp(selected_KOPI, beta)
+    mat.features[2, i] <- power(selected_KOPI, beta)
+    mat.features[selected_KOPI + 2, i] <- 1
+    
+    
+    
+    colnames(mat.features)[i] =  str_glue("KOPI_q_", q ,"_")
+    
+  }
+  
+  rownames(mat.features) = c("FDP", "power", c(1:p))
+  
+  
+  return(mat.features)
+  
+}
+
 # Performance comparison: KO vs KOPI
 
 KOPI_KO_comp <- function(X, D_draws_X_k, y = NULL, beta = NULL, scale = FALSE, k = NULL, amplitude = NULL, alpha = 0.1, list_target_fdr_FDP, method = NULL, B = 100, k_max = NULL){

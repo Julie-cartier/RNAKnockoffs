@@ -16,7 +16,7 @@ source_python("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs
 
 
 
-################################################################################################################
+#######################################################################################################################
 ############################# True X (CRUKPAP), simulated linear y ####################################################
 
 
@@ -98,6 +98,41 @@ rownames(table.perf.linear.LPLR.lambda.oracle) <- c("lambda.oracle", "FDP", "Pow
 save(table.perf.linear.KOPI, table.perf.linear.LPLR.lambda.oracle, file = "/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/R_files/KOPI_KO_BH_add_linear_table_perfx10.R")
 
 
+###################### Additional comparison (KOPI with alpha = 0.5) ###########################################
+
+# load data to get the list of beta for further comparison
+
+load("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/R_files/LPLR_KO_BH_linear_table_perfx10.R")
+
+## Get the results with KOPI and The oracle lambda ##
+
+table.perf.linear.KOPI.0.5 <- data.frame(rep(NA, ncol(X_real)+2))
+
+
+tic()
+for (i in 1:100){
+  # pre-computed bank of 10 000 KO matrices obtained with the LSCIP method and X_real (KO_banks_cluster_script)
+  load(str_glue("/media/julie/T5 EVO/Data_cluster/KO_bank_under_sets/X_k_",i,"_100.R"))
+  
+  print(i)
+  
+  beta <- list.beta[[i]]
+  y <- y.sample(scale(X_real), beta, method = "linear", scale = FALSE, threshold = 0.5)
+  
+  table.perf.part <- Add_KOPI(scale(X_real), list_X_k_100, y = y, beta = beta, list_target_FDP = list_target_fdr, k_max = round(p/50), alpha = 0.5)
+  table.perf.linear.KOPI.0.5 <- cbind(table.perf.linear.KOPI.0.5, table.perf.part)
+  
+}
+
+toc()
+
+table.perf.linear.KOPI.0.5 <- table.perf.linear.KOPI.0.5[, -1]
+
+
+
+save(table.perf.linear.KOPI.0.5, file = "/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/R_files/KOPI_0.5_add_linear_table_perfx10.R")
+
+
 
 
 ################################################################################################################
@@ -134,6 +169,33 @@ table.perf.linear.KOPIKO <- table.perf.linear.KOPIKO[, -1]
 
 
 save(list.beta, table.perf.linear.KOPIKO, file = "/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/R_files/KOPI_KO_linear_table_perfx10.R")
+
+#### add KOPI with alpha = 0.5
+
+load("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/R_files/KOPI_KO_linear_table_perfx10.R")
+
+table.perf.linear.KOPI.0.5_comp <- data.frame(rep(NA, ncol(X_real)+2))
+
+tic()
+for (i in 1:100){
+  # pre-computed bank of 10 000 KO matrices obtained with the LSCIP method and X_real
+  load(str_glue("/media/julie/T5 EVO/Data_cluster/KO_bank_under_sets/X_k_",i,"_100.R"))
+  
+  print(i)
+  #D_draws_X_k <- list_KO_real_LSCIP[(Draws*(i-1)+1):(Draws*i)]
+  
+  beta <- list.beta[[i]]
+  y <- y.sample(scale(X_real), beta, method = "linear", scale = FALSE, threshold = 0.5)
+  table.perf.part <- Add_KOPI(scale(X_real), list_X_k_100, y = y, beta = beta, list_target_FDP = list_target_fdr, k_max = round(p/50), alpha = 0.5)
+  table.perf.linear.KOPI.0.5_comp <- cbind(table.perf.linear.KOPI.0.5_comp, table.perf.part)
+}
+
+toc()
+
+table.perf.linear.KOPI.0.5_comp <- table.perf.linear.KOPI.0.5_comp[, -1]
+
+
+save(table.perf.linear.KOPI.0.5_comp, file = "/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/R_files/KOPI_KO_comp_0.5.linear_table_perfx10.R")
 
 
 ################################################################################################################

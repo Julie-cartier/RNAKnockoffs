@@ -1,0 +1,376 @@
+---
+title: "Signatures_classification_performance"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r source R files}
+source('/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/Settings.R')
+source('/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/Functions.R')
+```
+
+```{r load data}
+
+load("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/R_files/LPLR_KO_BH_linear_table_perfx10.R")
+load("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/R_files/KOPI_KO_BH_add_linear_table_perfx10.R")
+
+```
+
+```{r additional packages}
+library(e1071) #SVM model
+library(xgboost)
+```
+
+
+```{r Additional functions}
+
+
+Add_LPLR_oracle_min <- function(X, y){
+  
+  # X: data matrix of size nxp
+  # y: outcomes (vector of size n)
+  # beta: vector of size p (coefficients)
+  # scale: If TRUE data are scaled (Default to FALSE)
+  # k: number of non null coefficients (non-null features). To simulate interacting settings, k is assumed to be even.
+  # amplitude: amplitude of the non null coefficients 
+  # method: either "linear" or "interaction"
+  
+  n <- nrow(X)
+  p <- ncol(X)
+  
+  
+  new_lambda_sequence <- seq(1, 0, -0.001)
+  
+  ############################# Lambda oracle ###################################################################
+  ## get lambda oracle 
+  
+  new_lambda_sequence <- seq(1, 0, -0.001)
+  fitlog_oracle <- glmnet(X, y, type.measure = "deviance", family = "binomial", lambda = seq(1, 0, -0.001))
+  
+  vec.ratio.TD.FD = c()
+  
+  # Find the best lambda
+  
+  for (lambda in new_lambda_sequence){
+    coef_lasso <- coef(fitlog_oracle, s = lambda)
+    selected_lasso <- which(coef_lasso[-1]!=0)
+    vec.ratio.TD.FD <- c(vec.ratio.TD.FD, sum(beta[selected_lasso] != 0)/sum(beta[selected_lasso] == 0))
+  }
+  
+  # get the power and FDP corresponding to this lambda 
+  
+  lambda.oracle <- new_lambda_sequence[which.max(vec.ratio.TD.FD)]
+  beta.lambda.oracle <- coef(fitlog_oracle, s = lambda.oracle)
+  selected_lambda.oracle <- which(beta.lambda.oracle[-1]!=0)
+  selected.oracle.indices <- rep(0,p) %>% replace(selected_lambda.oracle, 1)
+  vec.lambda.oracle <- c(lambda.oracle, fdp(selected_lambda.oracle, beta), power(selected_lambda.oracle, beta), selected.oracle.indices)
+  
+  ############################# Lambda min ###################################################################
+ 
+  
+  cv.fitlog <- cv.glmnet(X, y, type.measure = "deviance", family = "binomial")
+  beta.lambda.min <- coef(cv.fitlog, s = "lambda.min")
+  selected_lambda.min <- which(beta.lambda.min[-1]!=0)
+  selected.min.indices <- rep(0,p) %>% replace(selected_lambda.min, 1)
+  vec.lambda.min <- c(cv.fitlog$lambda.min, fdp(selected_lambda.min, beta), power(selected_lambda.min, beta), selected.min.indices)
+  
+  return(list(vec.lambda.min, vec.lambda.oracle))
+  
+}
+
+get_prediction_performance <- function(y.test, y.predict){
+  
+  FN <- length(which(y.test-y.predict == 1))
+  FP <- length(which(y.test-y.predict == -1))
+  TN <- length(which(y.test+y.predict == 0))
+  TP <- length(which(y.test+y.predict == 2))
+  
+  balancedAccuracy <- 0.5*(TP/(TP+FN) + TN/(TN+FP))
+  balancedErrorRate <- 0.5*(FN/(TP+FN) + FP/(TN+FP))
+  F1Score <- 2*TP/(2*TP+FP+FN)
+  
+  return(c(FN,FP,TN,TP, balancedAccuracy, balancedErrorRate, F1Score))
+}
+
+
+```
+
+
+#### Prior additional experiments ####
+
+
+####### Check the relevance of the sequence of lambda used to compute lambda.min and lambda.oracle ################
+
+```{r lambda sequence}
+vec.min <- c()
+vec.max <- c()
+
+for (i in 1:100){
+
+  beta <- list.beta[[i]] 
+  y <- y.sample(scale(X_real), beta, method = "linear", scale = FALSE, threshold = 0.5)
+  
+  fitlog_oracle <- glmnet(scale(X_real), y, type.measure = "deviance", family = "binomial")
+  vec.lambda <- fitlog_oracle$lambda
+  
+  vec.min <- c(vec.min,min(vec.lambda))
+  vec.max <- c(vec.max,max(vec.lambda))
+
+}
+
+
+min(vec.min)
+max(vec.min)
+
+min(vec.max)
+max(vec.max)
+```
+
+```{r Selected set of features for Lambda.min et lambda.oracle}
+
+table.perf.linear.lambda.oracle <- data.frame(matrix(ncol = 100, nrow = ncol(X_real)+3))
+table.perf.linear.lambda.min <- data.frame(matrix(ncol = 100, nrow = ncol(X_real)+3))
+
+
+tic()
+for (i in 1:100){
+  print(i)
+  
+  beta <- list.beta[[i]]
+  y <- y.sample(scale(X_real), beta, method = "linear", scale = FALSE, threshold = 0.5)
+  table.perf.part <- Add_LPLR_oracle_min(scale(X_real), y)
+  table.perf.linear.lambda.oracle[,i] <- table.perf.part[[2]]
+  table.perf.linear.lambda.min[,i] <- table.perf.part[[1]]
+}
+
+toc()
+
+rownames(table.perf.linear.lambda.oracle) <- c("lambda.oracle", "FDP", "Power", c(1:p))
+rownames(table.perf.linear.lambda.min) <- c("lambda.min", "FDP", "Power", c(1:p))
+
+
+save(table.perf.linear.lambda.min, table.perf.linear.lambda.oracle, file = "/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/Prediction/R_files/oracle_min_linear_table_perfx10.R")
+
+```
+```{r get corresponding mean and FDP}
+
+df_LPLR <- data.frame(
+  lambda = c("lambda.min", "lambda.optimal"), 
+  mean.power = c(
+    rowMeans(table.perf.linear.lambda.min)[3], 
+    rowMeans(table.perf.linear.lambda.oracle)[3]
+  ),
+  sd.power = c(
+    apply(table.perf.linear.lambda.min, 1, sd)[3], 
+    apply(table.perf.linear.lambda.oracle, 1, sd)[3]
+  ),
+  mean.FDP = c(
+    rowMeans(table.perf.linear.lambda.min)[2], 
+    rowMeans(table.perf.linear.lambda.oracle)[2]
+  ),
+  sd.FDP = c(
+    apply(table.perf.linear.lambda.min, 1, sd)[2], 
+    apply(table.perf.linear.lambda.oracle, 1, sd)[2]
+  )
+)
+
+# Results are exactly the same as in the previous comparison which was expected for lambda oracle (for lambda min probably due to similar CV samples)
+
+```
+
+#### Unified selected features data tables ####
+
+
+```{r}
+
+load("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/Prediction/R_files/oracle_min_linear_table_perfx10.R")
+#LPLR
+
+lambda.min.selected.features <- table.perf.linear.lambda.min[4:(ncol(X_real)+3),]
+lambda.oracle.selected.features <- table.perf.linear.lambda.oracle[4:(ncol(X_real)+3),]
+
+#KOPI
+
+KOPI_0.2.selected.features <- table.perf.linear.KOPI[3:(ncol(X_real)+2) ,seq(which(list_target_fdr == c(0.2)), length(list_target_fdr)*100, length(list_target_fdr))] 
+KOPI_0.5.selected.features <- table.perf.linear.KOPI[3:(ncol(X_real)+2) ,seq(which(list_target_fdr == c(0.5)), length(list_target_fdr)*100, length(list_target_fdr))] 
+
+# KO
+
+table.perf.linear.KO <- table.perf.linear.LPLRKO[ ,grep("LCD", names(table.perf.linear.LPLRKO))]
+
+KO_0.2.selected.features <- table.perf.linear.KO[3:(ncol(X_real)+2) ,seq(which(list_target_fdr == c(0.2)), length(list_target_fdr)*100, length(list_target_fdr))] 
+KO_0.5.selected.features <- table.perf.linear.KO[3:(ncol(X_real)+2) ,seq(which(list_target_fdr == c(0.5)), length(list_target_fdr)*100, length(list_target_fdr))] 
+
+
+n.lambda.min <- sum(lambda.min.selected.features)/100
+n.lambda.oracle <- sum(lambda.oracle.selected.features)/100
+n.KO_0.2 <- sum(KO_0.2.selected.features)/100
+n.KO_0.5 <- sum(KO_0.5.selected.features)/100
+n.KOPI_0.2 <- sum(KOPI_0.2.selected.features)/100
+n.KOPI_0.5 <- sum(KOPI_0.5.selected.features)/100
+
+get.n_selected.columns <- function(k_selected, df){return(sum(colSums(df) == k_selected))}
+n.0.lambda.min <- get.n_selected.columns(0, lambda.min.selected.features)
+n.0.lambda.oracle <- get.n_selected.columns(0, lambda.oracle.selected.features)
+n.0.KO_0.2 <- get.n_selected.columns(0, KO_0.2.selected.features)
+n.0.KO_0.5 <- get.n_selected.columns(0, KO_0.5.selected.features)
+n.0.KOPI_0.2 <- get.n_selected.columns(0, KOPI_0.2.selected.features)
+n.0.KOPI_0.5 <- get.n_selected.columns(0, KOPI_0.5.selected.features)
+
+n.1.lambda.min <- get.n_selected.columns(1, lambda.min.selected.features)
+n.1.lambda.oracle <- get.n_selected.columns(1, lambda.oracle.selected.features)
+n.1.KO_0.2 <- get.n_selected.columns(1, KO_0.2.selected.features)
+n.1.KO_0.5 <- get.n_selected.columns(1, KO_0.5.selected.features)
+n.1.KOPI_0.2 <- get.n_selected.columns(1, KOPI_0.2.selected.features)
+n.1.KOPI_0.5 <- get.n_selected.columns(1, KOPI_0.5.selected.features)
+
+
+```
+
+```{r seed}
+set.seed(123)
+```
+
+
+```{r create CV samples}
+
+
+CV.split <- sample(1:n) %>% split(f = rep(1:10, c(rep(37,9),36)))
+save(CV.split, file = "/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/Prediction/R_files/CVsplit.RData")
+length(CV.split)
+
+```
+
+```{r}
+create.Classif_perf.table <- function(data.selected.features, CV_fold, list.beta){
+  
+  # data.selected.features: table of size with selected variables at each of the 100 iterations (correponding to 100 beta) (1 for selected     features 0 otherwise)
+  # k_fold: list of the fold for cross-validation
+  # list.beta: list of beta vectors (to compute the outcomes y)
+  # Tables initialization
+  
+  k_fold = length(CV_fold)
+  iter = ncol(data.selected.features)
+  
+  classif.perf.table.rownames <- c("FN", "FP", "TN", "TP", "balancedAccuracy", "balancedErrorRate", "F1Score")
+
+  Ridge.classif.perf.table <- data.frame(matrix(nrow = 7, ncol = k_fold*iter)) 
+  rownames(Ridge.classif.perf.table) <- classif.perf.table.rownames
+  
+  SVM.classif.perf.table <- data.frame(matrix(nrow = 7, ncol = k_fold*iter)) 
+  rownames(SVM.classif.perf.table) <- classif.perf.table.rownames
+  
+  GLM.classif.perf.table <- data.frame(matrix(nrow = 7, ncol = k_fold*iter)) 
+  rownames(GLM.classif.perf.table) <- classif.perf.table.rownames
+  
+  XGB.classif.perf.table <- data.frame(matrix(nrow = 7, ncol = k_fold*iter)) 
+  rownames(XGB.classif.perf.table) <- classif.perf.table.rownames
+  
+  for (i in (1:length(list.beta))){
+    print(i)
+    beta <- list.beta[[i]] 
+    y <- y.sample(scale(X_real), beta, method = "linear", scale = FALSE, threshold = 0.5)
+    
+    # extract selected features
+    selected.features.indices <- which(data.selected.features[,i] == 1)
+    
+    if (length(selected.features.indices) == 0){
+      for (cv in (1:k_fold)){
+        Ridge.classif.perf.table[, k_fold*(i-1) + cv] <- rep(0,7)
+        colnames(Ridge.classif.perf.table)[k_fold*(i-1) + cv] <- str_glue("fold_",cv,"_beta_",i)
+        
+        GLM.classif.perf.table[, k_fold*(i-1) + cv] <- rep(0,7)
+        colnames(GLM.classif.perf.table)[k_fold*(i-1) + cv] <- str_glue("fold_",cv,"_beta_",i)
+        
+        SVM.classif.perf.table[, k_fold*(i-1) + cv] <- rep(0,7)
+        colnames(SVM.classif.perf.table)[k_fold*(i-1) + cv] <- str_glue("fold_",cv,"_beta_",i)
+        
+        XGB.classif.perf.table[, k_fold*(i-1) + cv] <- rep(0,7)
+        colnames(XGB.classif.perf.table)[k_fold*(i-1) + cv] <- str_glue("fold_",cv,"_beta_",i)
+      }
+    }
+    else{
+      X.data <- scale(X_real)[,selected.features.indices, drop = FALSE] # drop: avoid issue when only one feature is selected
+    
+      # Use 10-fold CV to compute classification performance for each method
+      
+      for (cv in (1:k_fold)){
+        sample.test <- CV_fold[[cv]]
+        y.train <- y[-sample.test]
+        y.test <- y[sample.test]
+      
+        X.train <- X.data[-sample.test, , drop = FALSE]
+        X.test <- X.data[sample.test, , drop = FALSE]
+      
+        # Ridge logistic regression
+        if (length(selected.features.indices) == 1){
+          perf.Ridge <- rep("remove",7)}else{
+          Ridgelog <- cv.glmnet(X.train, y.train, type.measure = "deviance", family = "binomial", nfolds = 10, alpha = 0)
+          Ridge.score = predict(Ridgelog, newx = X.test, s = "lambda.min", type = "response") # there is alos class to directly get Ridge.prediction
+          Ridge.prediction <- ifelse(Ridge.score > 0.5, 1, 0)
+          perf.Ridge <- get_prediction_performance(y.test, Ridge.prediction)
+        }
+      
+        Ridge.classif.perf.table[,k_fold*(i-1) + cv] <- perf.Ridge
+        colnames(Ridge.classif.perf.table)[k_fold*(i-1) + cv] <- str_glue("fold_",cv,"_beta_",i)
+      
+        # Logistic regression
+      
+        train.data <- data.frame(y = y.train, X.train)
+        GLM.model <- glm(y ~ ., data = train.data, family = binomial(link = "logit"))
+        GLM.score = predict(GLM.model, newdata = data.frame(X.test), type = "response")
+        GLM.prediction <- ifelse(GLM.score > 0.5, 1, 0)
+        perf.GLM <- get_prediction_performance(y.test, GLM.prediction)
+      
+        GLM.classif.perf.table[, k_fold*(i-1) + cv] <- perf.GLM
+        colnames(GLM.classif.perf.table)[k_fold*(i-1) + cv] <- str_glue("fold_",cv,"_beta_",i)
+        # SVM
+      
+        SVM.model <- svm(x = X.train, y = y.train, type = "C-classification", kernel = "radial")
+        SVM.prediction <- predict(SVM.model, newdata = X.test, type = "decision")
+        perf.SVM <- get_prediction_performance(y.test, as.numeric(levels(SVM.prediction))[SVM.prediction])
+        
+        SVM.classif.perf.table[, k_fold*(i-1) + cv] <- perf.SVM
+        colnames(SVM.classif.perf.table)[k_fold*(i-1) + cv] <- str_glue("fold_",cv,"_beta_",i)
+      
+        # XgBoost
+      
+        XGB.model <- xgboost(data = X.train, label = y.train, max_depth = 6, eta = 0.3, nthread = 4, nrounds = 2, objective = "binary:logistic", verbose = 0)
+         XGB.score <- predict(XGB.model, newdata = X.test)
+         XGB.prediction <- as.numeric(XGB.score > 0.5) # other version
+         perf.XGB <- get_prediction_performance(y.test, XGB.prediction)
+         
+         XGB.classif.perf.table[, k_fold*(i-1) + cv] <- perf.XGB
+         colnames(XGB.classif.perf.table)[k_fold*(i-1) + cv] <- str_glue("fold_",cv,"_beta_",i)
+  
+      }
+    }
+
+  }
+  return(list(Ridge.classif.perf.table, GLM.classif.perf.table, SVM.classif.perf.table, XGB.classif.perf.table))
+} 
+```
+
+```{r}
+
+perf.KO.0.2 <- create.Classif_perf.table(data.selected.features = KO_0.2.selected.features, CV_fold = CV.split, list.beta = list.beta)
+perf.KO.0.5 <- create.Classif_perf.table(data.selected.features = KO_0.5.selected.features, CV_fold = CV.split, list.beta = list.beta)
+perf.KOPI.0.2 <- create.Classif_perf.table(data.selected.features = KOPI_0.2.selected.features, CV_fold = CV.split, list.beta = list.beta)
+perf.KOPI.0.5 <- create.Classif_perf.table(data.selected.features = KOPI_0.5.selected.features, CV_fold = CV.split, list.beta = list.beta)
+perf.lambda.oracle <- create.Classif_perf.table(data.selected.features = lambda.oracle.selected.features, CV_fold = CV.split, list.beta = list.beta)
+perf.lambda.min <- create.Classif_perf.table(data.selected.features = lambda.min.selected.features, CV_fold = CV.split, list.beta = list.beta)
+
+
+
+
+```
+
+```{r}
+save(perf.KO.0.2, perf.KO.0.5, perf.KOPI.0.2, perf.KOPI.0.5, perf.lambda.oracle, perf.lambda.min, file = "/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/Prediction/R_files/table.perf.classif.RData")
+```
+
+
+

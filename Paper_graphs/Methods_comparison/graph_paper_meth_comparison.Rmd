@@ -464,7 +464,7 @@ load("/home/julie/Documents/Paper_codes/New_cohorts_EXPERIMENTS/AEGIS/R_files/ta
 
 # Create data frame from graphical representation
 
-df_done_synth_linear = df_perf_maker(table.perf.linear.comp_tot, list_target_fdr, KO_meth_names = c("SDP", "MVR", "LSCIP", "CI"), n.rep = 100)
+df_done_synth_linear = df_perf_maker(table.perf.linear.comp.meth, list_target_fdr, KO_meth_names = c("SDP", "MVR", "LSCIP", "CI"), n.rep = 100)
 
 
 df_power_fdr <- df_done_synth_linear[[1]]

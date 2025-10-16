@@ -76,7 +76,7 @@ create_KO_stats <- function(X, list_X_k, y, num_cores = 5){
 # Apply the KOPI scheme to perform selection 
 # get table with selected features for different target FDR 
 
-KOPI_selection <- function(X, y, list_X_k, KO_stats = NULL){
+KOPI_selection <- function(X, y, list_X_k, KO_stats = NULL, alpha = 0.1){
   
   # X: data matrix (nxp)
   # y: otcomes (vector of size n)
@@ -110,16 +110,16 @@ KOPI_selection <- function(X, y, list_X_k, KO_stats = NULL){
   
   # select features
   
-  set_selected_0.1 <- KOPI_given_all(ko_stats = KO_stats_py, draws = Draws, alpha = 0.1, target_fdp = 0.1, learned_tpl_hmean = learned_tpl_hmean, pi0_hmean = pi0_hmean, k_max = as.integer(round(p/50)))
+  set_selected_0.1 <- KOPI_given_all(ko_stats = KO_stats_py, draws = Draws, alpha = alpha, target_fdp = 0.1, learned_tpl_hmean = learned_tpl_hmean, pi0_hmean = pi0_hmean, k_max = as.integer(round(p/50)))
   selected_KOPI_0.1 <- set_selected_0.1[[1]] + 1
   
-  set_selected_0.2 <- KOPI_given_all(ko_stats = KO_stats_py, draws = Draws, alpha = 0.1, target_fdp = 0.2, learned_tpl_hmean = learned_tpl_hmean, pi0_hmean = pi0_hmean, k_max = as.integer(round(p/50)))
+  set_selected_0.2 <- KOPI_given_all(ko_stats = KO_stats_py, draws = Draws, alpha = alpha, target_fdp = 0.2, learned_tpl_hmean = learned_tpl_hmean, pi0_hmean = pi0_hmean, k_max = as.integer(round(p/50)))
   selected_KOPI_0.2 <- set_selected_0.2[[1]] + 1
   
-  set_selected_0.3 <- KOPI_given_all(ko_stats = KO_stats_py, draws = Draws, alpha = 0.1, target_fdp = 0.3, learned_tpl_hmean = learned_tpl_hmean, pi0_hmean = pi0_hmean, k_max = as.integer(round(p/50)))
+  set_selected_0.3 <- KOPI_given_all(ko_stats = KO_stats_py, draws = Draws, alpha = alpha, target_fdp = 0.3, learned_tpl_hmean = learned_tpl_hmean, pi0_hmean = pi0_hmean, k_max = as.integer(round(p/50)))
   selected_KOPI_0.3 <- set_selected_0.3[[1]] + 1
   
-  set_selected_0.5 <- KOPI_given_all(ko_stats = KO_stats_py, draws = Draws, alpha = 0.1, target_fdp = 0.5, learned_tpl_hmean = learned_tpl_hmean, pi0_hmean = pi0_hmean, k_max = as.integer(round(p/50)))
+  set_selected_0.5 <- KOPI_given_all(ko_stats = KO_stats_py, draws = Draws, alpha = alpha, target_fdp = 0.5, learned_tpl_hmean = learned_tpl_hmean, pi0_hmean = pi0_hmean, k_max = as.integer(round(p/50)))
   selected_KOPI_0.5 <- set_selected_0.5[[1]] + 1
   
   table.coeff.KOPI[selected_KOPI_0.1, 1] = 1

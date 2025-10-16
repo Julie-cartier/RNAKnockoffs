@@ -162,7 +162,7 @@ graph_power_fdp_fdr <-ggarrange(
 
 
 
-ggsave(file = "/home/julie/Documents/Paper_codes/Paper_graphs/Statistics_comparison/Figures/Figure_2.png", height = 10, width = 14)
+ggsave(file = "/home/julie/Documents/Paper_codes/Paper_graphs/Statistics_comparison/Figures/Figure_stats.png", height = 10, width = 14)
 ```
 
 
