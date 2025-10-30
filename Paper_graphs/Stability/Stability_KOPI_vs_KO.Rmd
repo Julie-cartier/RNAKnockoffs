@@ -178,10 +178,10 @@ hist_0.5
 
 ```{r}
 
-graph_0.2 <- ggarrange(hist_0.2, hist_KOPI0.2, ncol = 2, labels = c("(a) : Vanilla KO, q = 0.2 ", "(b) : KOPI, q = 0.2"), label.x = 0.05, label.y = 0.9, common.legend = TRUE, font.label = list(size = 28), legend = "top") 
+graph_0.2 <- ggarrange(hist_0.2, hist_KOPI0.2, ncol = 2, labels = c("(a): KO, q = 0.2 ", "(b): KOPI, q = 0.2"), label.x = 0.05, label.y = 0.9, common.legend = TRUE, font.label = list(size = 28), legend = "top") 
 
 
-graph_0.5 <- ggarrange(hist_0.5, hist_KOPI0.5, ncol = 2, labels = c("(c) : Vanilla KO, q = 0.5 ", "(d) : KOPI, q = 0.5"), label.x = 0.05, label.y = 0.9, common.legend = TRUE, font.label = list(size = 28), legend = "top") 
+graph_0.5 <- ggarrange(hist_0.5, hist_KOPI0.5, ncol = 2, labels = c("(c): KO, q = 0.5 ", "(d): KOPI, q = 0.5"), label.x = 0.05, label.y = 0.9, common.legend = TRUE, font.label = list(size = 28), legend = "top") 
 
 
 combined_graph <- ggarrange(graph_0.2, graph_0.5, ncol = 1, labels = NULL)

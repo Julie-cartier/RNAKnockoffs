@@ -28,7 +28,8 @@ library(readr) # open faster csv files
 
 # open data
 
-RNA.BC.HGNC <- read_csv(file = "/home/julie/Documents/Paper_codes/Data/BC/GSE96058_gene_expression_3273_samples_and_136_replicates_transformed.csv", col_names = TRUE)
+#RNA.BC.HGNC <- read_csv(file = "/home/julie/Documents/Paper_codes/Data/BC/GSE96058_gene_expression_3273_samples_and_136_replicates_transformed.csv", col_names = TRUE)
+RNA.BC.HGNC <- read_csv(file = "/media/julie/T5 EVO/Copie ordinateur/Paper_codes/Data/BC/GSE96058_gene_expression_3273_samples_and_136_replicates_transformed.csv", col_names = TRUE)
 
 # get HGNC names
 HGNC_names <- RNA.BC.HGNC$...1

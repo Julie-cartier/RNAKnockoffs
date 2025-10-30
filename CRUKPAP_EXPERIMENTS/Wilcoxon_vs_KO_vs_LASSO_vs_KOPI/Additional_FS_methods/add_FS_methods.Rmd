@@ -1,0 +1,293 @@
+---
+title: "add_FS_methods"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r source}
+source('/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/Settings.R')
+source('/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/Functions.R')
+load("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/R_files/LPLR_KO_BH_linear_table_perfx10.R")
+```
+
+```{r additional libraries}
+library(varbvs)
+library(hdsvm)
+```
+
+```{r additional generic functions}
+get_power_FDP <- function(feature_importance, beta){
+  
+  FDP <- c()
+  power <- c()
+  
+  rank.value.ind <- order(feature_importance, decreasing = TRUE)
+  selection.state <- beta[rank.value.ind]
+  k <- length(which(beta!=0))
+  
+  for (n in 1:length(beta)){
+    selected.set <- selection.state[1:n]
+    power <- c(power, length(which(selected.set != 0))/k)
+    FDP <- c(FDP, length(which(selected.set == 0))/n)
+  }
+  
+  return(rbind(FDP, power))
+}
+```
+
+
+########## Bayesian variable selection for conditional logistic regression ###################
+
+
+
+```{r}
+
+table.perf.linear.BVS <- data.frame(matrix(ncol = 100*749, nrow = 2))
+table.perf.linear.BVS.pip <- data.frame(matrix(ncol = 100*749, nrow = 2))
+table.BVS.importance <- data.frame(matrix(ncol = 100, nrow = 749))
+table.BVS.pip <- data.frame(matrix(ncol = 100, nrow = 749))
+
+
+tic()
+for (iter in 1:length(list.beta)){
+  beta <- list.beta[[iter]]
+  y <- y.sample(scale(X_real), beta, method = "linear", scale = FALSE, threshold = 0.5)
+  
+  # get importance score
+  fit.varbvs <- varbvs(X = scale(X_real), y = y, Z = NULL, family = "binomial", verbose = FALSE)
+  coef.values <- coef(fit.varbvs)
+  BVS_importance <- coef.values[2:750,21] # 21 take the average across the 21 iterations
+  BVS_pip <- fit.varbvs$pip
+  
+  table.perf.part <- get_power_FDP(abs(BVS_importance), beta)
+  table.perf.linear.BVS[c(1,2),(749*(iter-1)+1):(749*iter)] <- table.perf.part
+  table.BVS.importance[,iter] <- abs(BVS_importance)
+ 
+  
+  table.perf.part <- get_power_FDP(abs(BVS_pip), beta)
+  table.perf.linear.BVS.pip[c(1,2),(749*(iter-1)+1):(749*iter)] <- table.perf.part
+  table.BVS.pip[,iter] <- BVS_pip
+  
+}
+toc()
+rownames(table.perf.linear.BVS) <- c("FDP", "Power")
+rownames(table.perf.linear.BVS.pip) <- c("FDP", "Power")
+
+
+save(table.perf.linear.BVS, table.perf.linear.BVS.pip, table.BVS.pip, table.BVS.importance, file = "/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/Additional_FS_methods/R_files/BVS_linear_table_perfx100.RData")
+
+
+```
+
+
+
+
+
+```{r}
+table.perf.linear.scadSVM <- data.frame(matrix(ncol = 100*101, nrow = 2))
+
+tic()
+for (iter in 1:length(list.beta)){
+  beta <- list.beta[[iter]]
+  y <- y.sample(scale(X_real), beta, method = "linear", scale = FALSE, threshold = 0.5)
+  
+  lam2 <- 0.01
+  lambda <- 10^(seq(1,-4, length.out = 100))
+  cv.nc.fit <- cv.nc.hdsvm(x = scale(X_real), y = y, lambda = lambda, lam2 = lam2, pen = "scad")
+  
+  for (i in 1:length(lambda)){
+    coef_ <- coef(cv.nc.fit, s = lambda[i])
+    table.perf.linear.scadSVM[1,101*(iter-1)+i] <- fdp(which(coef_!=0)-1, beta)
+    table.perf.linear.scadSVM[2,101*(iter-1)+i] <- power(which(coef_!=0)-1, beta)
+  }
+  
+  coef_ <- coef(cv.nc.fit, s = c("lambda.min"))
+  table.perf.linear.scadSVM[1,101*(iter-1)+101] <- fdp(which(coef_!=0)-1, beta) 
+  table.perf.linear.scadSVM[2,101*(iter-1)+101] <- power(which(coef_!=0)-1, beta)
+}
+toc()
+rownames(table.perf.linear.scadSVM) <- c("FDP", "Power")
+
+
+save(table.perf.linear.scadSVM, file = "/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/Additional_FS_methods/R_files/scadSVM_linear_table_perfx100.RData")
+
+```
+
+```{r}
+load("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/Additional_FS_methods/R_files/BVS_linear_table_perfx100.RData")
+load("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/Additional_FS_methods/R_files/scadSVM_linear_table_perfx100.RData")
+```
+
+################################### Get optimal selection #################################################################
+
+```{r SCAD min}
+table.perf.linear.scadSVM.min <- table.perf.linear.scadSVM[, c(seq(1,10100,101)-1,10100)]
+rowMeans(table.perf.linear.scadSVM.min)
+sd(table.perf.linear.scadSVM.min[1,])
+sd(table.perf.linear.scadSVM.min[2,])
+```
+```{r  BVS oracle}
+
+Mean.BVS.pip.k10 <- table.perf.linear.BVS.pip[, c(seq(10,74900,749)-1)] %>% rowMeans()
+
+Power_FD_ <- c()
+oracle.power <- c()
+oracle.FDP <- c()
+
+# In this case TD and FD can be directly obtained from the power and the FDP
+
+for (i in 1:100){
+  
+table <- table.perf.linear.BVS.pip[,(749*(i-1)+1):(749*i)]
+TD <- table[2,]*10
+FD <- table[1,]*(1:749)
+vec.ratio <- TD/FD
+
+if (length(which(FD == 0)) == 0){
+  Power_FD_ <- c(Power_FD_, 0)
+}else{
+  Power_FD_ <- c(Power_FD_, table[2, length(which(FD == 0))])
+}
+
+mFD <- FD
+mFD[which(FD == 0)] <- 750 
+mvec.ratio <- TD/mFD
+
+
+oracle.power <- c(oracle.power, table[2, which.max(mvec.ratio)])
+oracle.FDP <- c(oracle.FDP, table[1, which.max(mvec.ratio)])
+}
+
+oracle.power.final <- oracle.power
+oracle.FDP.final <- oracle.FDP
+oracle.power.final[which(oracle.power <= Power_FD_)] <- Power_FD_[which(oracle.power <= Power_FD_)]
+oracle.FDP.final[which(oracle.power <= Power_FD_)] <- 0
+
+mean(oracle.power.final)
+sd(oracle.power.final)
+mean(oracle.FDP.final)
+sd(oracle.FDP.final)
+
+sd(table.perf.linear.BVS.pip[1, c(seq(10,74900,749)-1)])
+sd(table.perf.linear.BVS.pip[2, c(seq(10,74900,749)-1)])
+```
+
+
+##############################################################################################################################
+
+
+```{r}
+table.perf.linear.KO <- table.perf.linear.LPLRKO[, grep("LCD", names(table.perf.linear.LPLRKO))]
+```
+
+```{r partial graph}
+
+
+#df_done_boxplot_BVS = df_perf_maker_boxplot(table.perf.linear.BVS, list_target_fdr = c(1:p), stats_names = c("BVS (coef)"), n.rep = 100, length_bin = 0.1)
+df_done_boxplot_BVS_pip = df_perf_maker_boxplot(table.perf.linear.BVS.pip, list_target_fdr = c(1:p), stats_names = c("BVS"), n.rep = 100, length_bin = 0.1)
+df_done_boxplot_scadSVM = df_perf_maker_boxplot(table.perf.linear.scadSVM, list_target_fdr = c(1:101), stats_names = c("SVM"), n.rep = 100, length_bin = 0.1)
+df_done_boxplot_KO = df_perf_maker_boxplot(table.perf.linear.KO, list_target_fdr = c(1:101), stats_names = c("KO"), n.rep = 100, length_bin = 0.1)
+
+#df_boxplot <- df_done_boxplot_BVS
+#Bind results
+which(is.na(table.perf.linear.scadSVM))
+df_boxplot <- rbind(df_done_boxplot_BVS_pip, df_done_boxplot_KO, df_done_boxplot_scadSVM)
+
+df_aggregated <- summarise(group_by(df_boxplot, FDP_levels, KO), Count = n(), .groups = "drop") # get the count of points
+df_aggregated <- mutate(group_by(df_aggregated, KO), Normalized_Count = Count*100 / sum(Count)) # Normalized count by the length of parameters sequence (list_target_fdr, list_lambda, ...)
+df_means <- summarise(group_by(df_boxplot, FDP_levels, KO), Mean = mean(Power), .groups = "drop") # get the mean power over an FDP interval
+
+# Create boxplots which give point density for each methods
+
+count_plot <- ggplot(df_aggregated, aes(x = FDP_levels, y = Normalized_Count, fill = KO, color = KO)) +
+  geom_bar(stat = "identity", position = position_dodge(0.8), width = 0.6, alpha = 0.8) +
+  ylim(0, 97) +
+  geom_text(aes(label = round(Normalized_Count, 1)), # text/labels adjustments
+            position = position_dodge(0.8), 
+            vjust = -0.5,  
+            size = 5.,     
+            angle = 20,    
+            color = "black",
+            fontface = "bold") +
+  scale_fill_manual(values = c("#9d701b", "#17becf", "#7f7c00", "#a28823", "#993300")) +
+  scale_color_manual(values = c("#9d701b", "#17becf", "#7f7c00", "#a28823", "#993300")) +
+  labs(
+    x = NULL,  # Remove x-axis label to align with median plot
+    y = "Normalized count",
+    fill = "Methods",
+    shape = "Methods",  # Shape legend for median plot
+    color = "Methods"   # Color legend for median plot
+  ) +
+  theme(
+    axis.text.x = element_text(size = 22, face = "bold", angle = 45, hjust = 1),
+    axis.title.x = element_text(size = 24),
+    axis.title.y = element_text(size = 24, vjust = 2),
+    axis.text.y = element_text(size = 22, face = "bold"),
+    legend.position = c(0.88, 0.6),  
+    legend.title = element_blank(),
+    legend.text = element_text(size = 26),
+    legend.justification = c("right", "center"),
+    legend.spacing.x = unit(0.7, "cm"),
+    panel.background = element_rect(fill = "#F6F6F6"),
+    panel.grid.major = element_line(size = 0.5, linetype = 'solid', colour = "white"),
+    panel.grid.minor = element_line(size = 0.25, linetype = 'solid', colour = "white"),
+    plot.title = element_blank()
+  ) + guides(#  legend guide
+    color = guide_legend(ncol = 3),  
+    fill = guide_legend(ncol = 3),   
+    shape = guide_legend(ncol = 3)  
+  ) 
+
+# Mean plot 
+
+mean_comp <- ggplot(df_aggregated, aes(x = FDP_levels, y = Power, size = Count, fill = KO, color = KO, shape = KO)) +
+  geom_point(data = df_means, aes(x = FDP_levels, y = Mean), size = 5, stroke = 1.9, position = position_dodge(width = 0.8)) +
+  scale_color_manual(values = c("#9d701b", "#17becf", "#7f7c00", "#a28823", "#993300")) +
+  scale_fill_manual(values = c("#9d701b", "#17becf", "#7f7c00", "#a28823", "#993300")) +
+  scale_shape_manual(values = c(11, 3, 14, 12)) +  # Shapes for KO methods
+  ylim(-0.1, 1) +
+  labs(
+    x = "FDP",
+    y = "Power (mean)",
+    fill = "Methods",
+    shape = "Methods",  
+    color = "Methods"   
+  ) +
+  theme(
+    axis.text.x = element_text(size = 22, face = "bold", angle = 45, hjust = 1),
+    axis.title.x = element_text(size = 24),
+    axis.title.y = element_text(size = 26),
+    axis.text.y = element_text(size = 22, face = "bold"),
+    legend.position = c(0.45, 0.9),  
+    legend.title = element_blank(),
+    legend.text = element_text(size = 26),
+    legend.justification = c("right", "center"),
+    legend.spacing.x = unit(0.7, "cm"),
+    panel.background = element_rect(fill = "#F6F6F6"),
+    panel.grid.major = element_line(size = 0.5, linetype = 'solid', colour = "white"),
+    panel.grid.minor = element_line(size = 0.25, linetype = 'solid', colour = "white"),
+    plot.title = element_blank()
+  ) + guides(# legend guide
+    color = guide_legend(ncol = 3), 
+    fill = guide_legend(ncol = 3),   
+    shape = guide_legend(ncol = 3)   
+  )
+
+
+# Combine plots
+
+combined_plot <- count_plot / mean_comp +
+  plot_layout(axes = "collect", heights = c(1, 2))  
+
+combined_plot
+
+ggsave(file = "/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/Additional_FS_methods/Figures/FS_meths_comp.png", height = 10, width = 16)
+```
+
+
+
+
+

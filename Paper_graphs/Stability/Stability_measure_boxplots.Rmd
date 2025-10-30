@@ -1,0 +1,94 @@
+---
+title: "Similarity_based_measure"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(ggplot2)
+```
+
+```{r Functions}
+sim_Pearson <- function(x,y,p,offset = 0){# p = dim of the set of features 
+  if (length(which(x==0))==length(x) | length(which(y==0))==length(x)){
+    return(offset)
+  }
+  else{intersection = length(intersect(which(x!=0),which(y!=0)))
+  kx = length(which(x!=0))
+  ky = length(which(y!=0))
+  num = intersection - kx*ky/p
+  hx = sqrt((1-kx/p)*kx/p)
+  hy = sqrt((1-ky/p)*ky/p)
+  return(num/(p*hx*hy))}
+}
+
+
+sim_based_measure <- function(data_set, sim_function = sim_Pearson, offset = 1){### for symetric function
+  stab = 0
+  d = dim(data_set)[1]
+  nb_repeat = dim(data_set)[2]
+  for (i in 1:(nb_repeat-1)){
+    for (j in (i+1):nb_repeat){
+      stab = stab + sim_function(data_set[,i], data_set[,j],d)
+    }
+  }
+  return(2*stab/(nb_repeat*(nb_repeat-1)))
+} 
+```
+
+
+
+
+
+```{r}
+y.rep <- 10
+
+
+
+df.stability <- data.frame(Sim_measure = rep(0,60), Method = rep(c("KO, q = 0.2", "KO, q = 0.5", "KOPI, q = 0.2", "KOPI, q = 0.5", "\u3BB(min)", "\u3BB(oracle)"), 10))
+
+for (rep in 1:y.rep){
+  print(rep)
+  # load selected features for all methods 
+  
+  load(str_glue("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Stability/R_files/y_rep/table.selected_genes_cv_Vanilla_",rep,".R"))
+  load(str_glue("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Stability/R_files/y_rep/table.selected_genes_cv_KOPI_",rep,".R"))
+  load(str_glue("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Stability/R_files/y_rep/table_selected_genes_LPLR_",rep,".R"))
+  load(str_glue("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Stability/R_files/y_rep/table_selected_genes_LPLR_oracle_",rep,".R"))
+  
+  df.stability[(6*(rep-1)+1):(6*rep), 1] <- c(sim_based_measure(table.selected_genes.Vanilla_0.2), sim_based_measure(table.selected_genes.Vanilla_0.5), sim_based_measure(table.selected_genes.KOPI_0.2), sim_based_measure(table.selected_genes.KOPI_0.2), sim_based_measure(table.selected.genes.LPLR), sim_based_measure(table.selected.genes.LPLR.oracle))
+  
+  }
+```
+
+```{r}
+ggplot(df.stability, aes(x=Method, y=Sim_measure, fill=Method)) + 
+      geom_boxplot(alpha=0.5) +
+      #geom_violin(alpha=0.5, draw_quantiles = c(0.5)) +
+      ylab("Pearson similarity based measure")+ 
+      coord_cartesian(ylim = c(0, 1.)) +
+      scale_fill_manual(values=c("#17becf", "#008899", "#95b0b4", "#4e686b", "#7c6fb0", "#b2a3e8")) +
+      #scale_x_discrete(labels = c("KO, q = 0.2", "KO, q = 0.5", "KOPI, q = 0.2", "KOPI, q = 0.5", "lambda[min]", "lambda[oracle]"))+
+      theme(axis.text.x = element_text(size = 22, face = "bold"),
+       axis.title.x = element_text(size = 24),
+       axis.title.y = element_text(size = 24),
+       axis.text.y = element_text(size = 22, face = "bold"),
+       legend.title = element_blank(),
+       legend.text = element_text(size = 26),
+       legend.justification = c("right", "center"),
+       legend.position = "none",
+       panel.background = element_rect(fill = "#F6F6F6"),
+                       panel.grid.major = element_line(size = 0.5, linetype = 'solid',
+                                    colour = "white"), 
+                       panel.grid.minor = element_line(size = 0.25, linetype = 'solid',
+                                    colour = "white"),
+       plot.title = element_blank(),
+       plot.margin = unit(c(0.6, 0.2, 0.2, 0.6), "cm")
+       )
+       
+ggsave("/home/julie/Documents/Paper_codes/Paper_graphs/Stability/Figures/stability_measures.png", height = 10, width = 14)
+```
+

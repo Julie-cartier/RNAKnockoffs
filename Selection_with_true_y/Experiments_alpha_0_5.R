@@ -104,7 +104,6 @@ colnames(X_BC)[which(table.selected.genes.BC.pgr$`q = 0.2` != 0)]
 colnames(X_BC)[which(table.selected.genes.BC.pgr$`q = 0.3` != 0)]
 colnames(X_BC)[which(table.selected.genes.BC.pgr$`q = 0.5` != 0)]
 
-
 ##################################
 #### Eperiments for AEGIS cohort #
 ##################################
@@ -139,7 +138,6 @@ colnames(X_AEGIS)[which(table.selected.genes.AEGIS$`q = 0.1` != 0)]
 colnames(X_AEGIS)[which(table.selected.genes.AEGIS$`q = 0.2` != 0)]
 colnames(X_AEGIS)[which(table.selected.genes.AEGIS$`q = 0.3` != 0)]
 colnames(X_AEGIS)[which(table.selected.genes.AEGIS$`q = 0.5` != 0)]
-
 
 
 
