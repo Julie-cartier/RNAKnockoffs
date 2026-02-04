@@ -155,6 +155,7 @@ rownames(table.perf.linear.lambda.min) <- c("lambda.min", "FDP", "Power", c(1:p)
 save(table.perf.linear.lambda.min, table.perf.linear.lambda.oracle, file = "/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/Prediction/R_files/oracle_min_linear_table_perfx10.R")
 
 ```
+
 ```{r get corresponding mean and FDP}
 
 df_LPLR <- data.frame(
@@ -228,6 +229,16 @@ n.1.KOPI_0.2 <- get.n_selected.columns(1, KOPI_0.2.selected.features)
 n.1.KOPI_0.5 <- get.n_selected.columns(1, KOPI_0.5.selected.features)
 
 
+```
+
+
+```{r}
+load("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/Additional_FS_methods/R_files/Selected_features_orcale_BVS.RData")
+load("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/Additional_FS_methods/R_files/DebiasedLasso_linear_table_perfx100.R")
+
+
+table.selected.DLasso.5 <- table.perf.BH.5 <- table.perf.linear.DLasso.BH[3:751, grep("BH_0.5_", colnames(table.perf.linear.DLasso.BH))]
+table.selected.DLasso.2 <- table.perf.linear.DLasso.BH[3:751, grep("BH_0.2_", colnames(table.perf.linear.DLasso.BH))]
 ```
 
 ```{r seed}
@@ -362,6 +373,9 @@ perf.KOPI.0.2 <- create.Classif_perf.table(data.selected.features = KOPI_0.2.sel
 perf.KOPI.0.5 <- create.Classif_perf.table(data.selected.features = KOPI_0.5.selected.features, CV_fold = CV.split, list.beta = list.beta)
 perf.lambda.oracle <- create.Classif_perf.table(data.selected.features = lambda.oracle.selected.features, CV_fold = CV.split, list.beta = list.beta)
 perf.lambda.min <- create.Classif_perf.table(data.selected.features = lambda.min.selected.features, CV_fold = CV.split, list.beta = list.beta)
+perf.BVS <- create.Classif_perf.table(data.selected.features = table.selected.BVS, CV_fold = CV.split, list.beta = list.beta)
+perf.DLasso.5 <- create.Classif_perf.table(data.selected.features = table.selected.DLasso.5, CV_fold = CV.split, list.beta = list.beta)
+perf.DLasso.2 <- create.Classif_perf.table(data.selected.features = table.selected.DLasso.5, CV_fold = CV.split, list.beta = list.beta)
 
 
 
@@ -369,7 +383,8 @@ perf.lambda.min <- create.Classif_perf.table(data.selected.features = lambda.min
 ```
 
 ```{r}
-save(perf.KO.0.2, perf.KO.0.5, perf.KOPI.0.2, perf.KOPI.0.5, perf.lambda.oracle, perf.lambda.min, file = "/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/Prediction/R_files/table.perf.classif.RData")
+load("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/Prediction/R_files/table.perf.classif.RData")
+save(perf.KO.0.2, perf.KO.0.5, perf.KOPI.0.2, perf.KOPI.0.5, perf.lambda.oracle, perf.lambda.min, perf.BVS, perf.DLasso.5, perf.DLasso.2, file = "/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/Prediction/R_files/table.perf.classif.RData")
 ```
 
 

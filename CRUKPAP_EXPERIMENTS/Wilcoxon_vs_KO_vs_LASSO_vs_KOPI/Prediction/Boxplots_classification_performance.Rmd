@@ -118,9 +118,9 @@ vec.meth.names <- c("Ridge", "GLM", "SVM", "XGB")
 
 for (i in 1:4){
   classif.model <- i
-  perf.accuracy <- c(unlist(perf.KO.0.2[[classif.model]][perf.metric, ]), unlist(perf.KO.0.5[[classif.model]][perf.metric, ]), unlist(perf.KOPI.0.2[[classif.model]][perf.metric, ]), unlist(perf.KOPI.0.5[[classif.model]][perf.metric, ]), unlist(perf.lambda.min[[classif.model]][perf.metric, ]), unlist(perf.lambda.oracle[[classif.model]][perf.metric, ]))
+  perf.accuracy <- c(unlist(perf.KO.0.2[[classif.model]][perf.metric, ]), unlist(perf.KO.0.5[[classif.model]][perf.metric, ]), unlist(perf.KOPI.0.2[[classif.model]][perf.metric, ]), unlist(perf.KOPI.0.5[[classif.model]][perf.metric, ]), unlist(perf.lambda.min[[classif.model]][perf.metric, ]), unlist(perf.lambda.oracle[[classif.model]][perf.metric, ]), unlist(perf.DLasso.2[[classif.model]][perf.metric, ]),unlist(perf.DLasso.5[[classif.model]][perf.metric, ]),unlist(perf.BVS[[classif.model]][perf.metric, ]))
   perf.accuracy[perf.accuracy == 0] <- 0.5
-  df_accuracy <- data.frame(perf = perf.accuracy, Method = rep(c("KO, q = 0.2", "KO, q = 0.5", "KOPI, q = 0.2", "KOPI, q = 0.5", "\u3BB(min)", "\u3BB(oracle)"), each = 1000)) %>% subset(perf != "remove") #%>% subset(perf != "0")
+  df_accuracy <- data.frame(perf = perf.accuracy, Method = rep(c("KO, q = 0.2", "KO, q = 0.5", "KOPI, q = 0.2", "KOPI, q = 0.5", "\u3BB(min)", "\u3BB(oracle)", "DLasso (0.2)", "DLasso (0.5)", "BVS"), each = 1000)) %>% subset(perf != "remove") #%>% subset(perf != "0")
   df_accuracy$perf <- as.numeric(df_accuracy$perf)
   
   
@@ -129,7 +129,7 @@ for (i in 1:4){
       #geom_jitter(width = 0.1, height = 0.1)
       ylab("Balnced accuracy")+ 
       coord_cartesian(ylim = c(0, 1.1)) +
-      scale_fill_manual(values=c("#17becf", "#008899", "#95b0b4", "#4e686b", "#7c6fb0", "#b2a3e8")) +
+      scale_fill_manual(values=c("#f1a0de", "#AFDABC", "#89bdac", "#17becf", "#008899", "#95b0b4", "#4e686b", "#7c6fb0", "#b2a3e8")) +
       #scale_x_discrete(labels = c("KO, q = 0.2", "KO, q = 0.5", "KOPI, q = 0.2", "KOPI, q = 0.5", "lambda[min]", "lambda[oracle]"))+
       theme(axis.text.x = element_text(size = 22, face = "bold"),
        axis.title.x = element_text(size = 24),
@@ -149,7 +149,7 @@ for (i in 1:4){
             )
   
   
-  ggsave(file = str_glue("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/Prediction/Figures/violin_default_accuracy_",vec.meth.names[i],".png"), height = 10, width = 14)
+  ggsave(file = str_glue("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/Prediction/Figures/violin_default_accuracy_",vec.meth.names[i],".png"), height = 10, width = 21)
     
 }
 

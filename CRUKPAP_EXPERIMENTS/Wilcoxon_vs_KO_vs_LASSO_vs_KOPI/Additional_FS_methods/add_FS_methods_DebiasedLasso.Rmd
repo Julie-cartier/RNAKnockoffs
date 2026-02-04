@@ -1,0 +1,336 @@
+---
+title: "add_FS_methods_DebiasedLasso"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r source}
+source('/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/Settings.R')
+source('/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/Functions.R')
+load("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/R_files/LPLR_KO_BH_linear_table_perfx10.R")
+load("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/Additional_FS_methods/R_files/pvalues.RData")
+```
+
+
+```{r additional function}
+
+DebiasedLasso.selection <- function(list_target_fdr, pvalues, beta){
+  
+  p.adjusted <- p.adjust(pvalues, method = "fdr")
+  mat.features.padjusted <- data.frame(matrix(0, ncol = length(list_target_fdr), nrow = p+2))
+  mat.features.pv <- data.frame(matrix(0, ncol = length(list_target_fdr), nrow = p+2))
+  
+  compteur = 0
+  
+  for (alpha in list_target_fdr){
+    compteur = compteur + 1
+    
+    # BH 
+    selected_pv <- which(pvalues <= alpha)
+    selected_BH <- which(p.adjusted <= alpha)
+    
+    
+    mat.features.padjusted[1, compteur] <- c(fdp(selected_BH, beta))
+    mat.features.padjusted[2, compteur] <- c(power(selected_BH, beta))
+    mat.features.padjusted[selected_BH + 2, compteur] <- 1
+    
+    mat.features.pv[1, compteur] <- c(fdp(selected_pv, beta))
+    mat.features.pv[2, compteur] <- c(power(selected_pv, beta))
+    mat.features.pv[selected_BH + 2, compteur] <- 1
+ 
+    
+    colnames(mat.features.padjusted)[compteur] <- str_glue("BH_", alpha, "_iter")
+    colnames(mat.features.pv)[compteur] <- str_glue("pv_", alpha, "_iter")
+  }
+  rownames(mat.features.padjusted) <- c("FDP", "power", c(1:p))
+  rownames(mat.features.pv) <- c("FDP", "power", c(1:p))
+  return(list(mat.features.padjusted, mat.features.pv))
+}
+```
+
+
+```{r}
+table.perf.linear.DLasso.BH <- data.frame(rep(NA, ncol(X_real)+2))
+table.perf.linear.DLasso.pv <- data.frame(rep(NA, ncol(X_real)+2))
+
+for (iter in 1:100){
+  pvalues <- pvalues.list[[iter]][-1]
+  beta <- list.beta[[iter]]
+  
+  part.mats <- DebiasedLasso.selection(list_target_fdr, pvalues, beta)
+  
+  table.perf.linear.DLasso.BH <- cbind(table.perf.linear.DLasso.BH, part.mats[[1]])
+  table.perf.linear.DLasso.pv <- cbind(table.perf.linear.DLasso.pv, part.mats[[2]])
+  }
+
+table.perf.linear.DLasso.BH <- table.perf.linear.DLasso.BH[,-1]
+table.perf.linear.DLasso.pv <- table.perf.linear.DLasso.pv[,-1]
+  
+save(table.perf.linear.DLasso.BH, table.perf.linear.DLasso.pv, file = "/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/Additional_FS_methods/R_files/DebiasedLasso_linear_table_perfx100.R")
+
+```
+
+
+```{r for comparison with KO}
+load("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/Additional_FS_methods/R_files/DebiasedLasso_linear_table_perfx100.R")
+```
+
+```{r synthesis BH}
+table.perf.BH.05 <- table.perf.linear.DLasso.BH[1:2, grep("BH_0.05_", colnames(table.perf.linear.DLasso.BH))]
+table.perf.BH.2 <- table.perf.linear.DLasso.BH[1:2, grep("BH_0.2_", colnames(table.perf.linear.DLasso.BH))]
+table.perf.BH.5 <- table.perf.linear.DLasso.BH[1:2, grep("BH_0.5_", colnames(table.perf.linear.DLasso.BH))]
+
+rowMeans(table.perf.BH.05)
+rowMeans(table.perf.BH.2)
+rowMeans(table.perf.BH.5)
+
+apply(table.perf.BH.05,1,sd)
+apply(table.perf.BH.2,1,sd)
+apply(table.perf.BH.5,1,sd)
+```
+
+# ```{r synthesis pv}
+# table.perf.pv.05 <- table.perf.linear.DLasso.pv[1:2, grep("pv_0.05_", colnames(table.perf.linear.DLasso.pv))]
+# table.perf.pv.2 <- table.perf.linear.DLasso.pv[1:2, grep("pv_0.2_", colnames(table.perf.linear.DLasso.pv))]
+# table.perf.pv.5 <- table.perf.linear.DLasso.pv[1:2, grep("pv_0.5_", colnames(table.perf.linear.DLasso.pv))]
+# 
+# rowMeans(table.perf.pv.05)
+# rowMeans(table.perf.pv.2)
+# rowMeans(table.perf.pv.5)
+# 
+# apply(table.perf.pv.05,1,sd)
+# apply(table.perf.pv.2,1,sd)
+# apply(table.perf.pv.5,1,sd)
+# ```
+
+```{r Control of the FDR by the Debiased LASSO}
+df_done_synth_linear = df_perf_maker(table.perf.linear.DLasso.BH, list_target_fdr = list_target_fdr, stats_names = c("DLasso+BH"), n.rep = 100)
+df_fdp_fdr <- df_done_synth_linear[[2]] 
+df_power_fdp <- df_done_synth_linear[[3]] 
+
+graph_fdp_fdr<- ggplot(df_fdp_fdr, aes(x = target_fdr, y = fdp, color = KO)) + 
+   ylab("FDP")+ 
+   xlab("Target FDR (q)") + 
+   ylim(c(-0.25, 1.22)) + 
+   geom_ribbon(aes(ymin = fdp - std,ymax = fdp + std, group = KO, fill = KO), alpha = 0.15, colour = NA) + 
+   geom_line(aes(group = KO), linewidth = 1.5)+
+   geom_abline(intercept = 0, slope = 1, color="black", linetype="dashed", linewidth = 1)+
+   scale_color_manual(values=c("#17becf"))  +
+   scale_fill_manual(values=c("#17becf")) +
+   theme(axis.text.x = element_text(size = 22, face = "bold"),
+   axis.title.x = element_text(size = 24),
+   axis.title.y = element_text(size = 24),
+   axis.text.y = element_text(size = 22, face = "bold"),
+   legend.title = element_blank(),
+   legend.text = element_text(size = 26),
+   legend.justification = c("right", "center"),
+   legend.position = c(.4, 0.7),
+   plot.subtitle = element_text(size = 18, face = "bold"),
+   panel.background = element_rect(fill = "#F6F6F6"),
+                   panel.grid.major = element_line(size = 0.5, linetype = 'solid',
+                                colour = "white"), 
+                   panel.grid.minor = element_line(size = 0.25, linetype = 'solid',
+                                colour = "white"),
+   plot.title = element_blank(),
+   plot.margin = unit(c(0.6, 0.2, 0.2, 0.6), "cm")
+        )
+
+graph_fdp_fdr
+
+
+
+graph_power_fdp <- ggplot(df_power_fdp, aes(x=fdp, y=power, color = KO)) + 
+   ylab("Power")+ 
+   xlab("FDP") + 
+   ylim(c(-0.25, 1.22)) + 
+   #ylim(c(-0.15, 1.20)) + 
+   # geom_pointrange( aes(ymin = power-std, ymax = power+std),linewidth = 1)+
+   geom_point(aes(shape = KO), size = 4) +
+   scale_shape_manual(values = c( 20, 15, 17, 18)) +  
+   geom_ribbon(aes(ymin = power - std, ymax = power + std, group = KO, fill = KO), alpha = 0.15, colour = NA) +
+   #geom_line(data = subset(df_power_fdp, KO == 'LASSO'), aes(group = KO))+
+   #geom_line(aes(group = KO), linewidth = 1.5)+
+   #labs(title = "Power vs FDP, k = 10, X from X real") +
+   scale_color_manual(values=c("#17becf"))  +
+   scale_fill_manual(values=c("#17becf")) +
+   theme(axis.text.x = element_text(size = 22, face = "bold"),
+   axis.title.x = element_text(size = 24),
+   axis.title.y = element_text(size = 24),
+   axis.text.y = element_text(size = 22, face = "bold"),
+   legend.title = element_blank(),
+   legend.text = element_text(size = 26),
+   legend.justification = c("right", "center"),
+   legend.position = c(.4, 0.7),
+   plot.subtitle = element_text(size = 18, face = "bold"),
+   panel.background = element_rect(fill = "#F6F6F6"),
+                   panel.grid.major = element_line(size = 0.5, linetype = 'solid',
+                                colour = "white"), 
+                   panel.grid.minor = element_line(size = 0.25, linetype = 'solid',
+                                colour = "white"),
+   plot.title = element_blank(),
+   plot.margin = unit(c(0.6, 0.2, 0.2, 0.6), "cm")
+        )
+        
+graph_power_fdp
+
+ggsave(file = "/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/Additional_FS_methods/Figures/DebiasedLasso_FDRcontrol.png", height = 5, width = 14)
+ggsave(file = "/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/Additional_FS_methods/Figures/DebiasedLasso_power_fdp.png", height = 5, width = 14)
+
+```
+
+
+
+
+```{r graph}
+
+table.perf.linear.KO <- table.perf.linear.LPLRKO[, grep("LCD", names(table.perf.linear.LPLRKO))]
+
+#df_done_boxplot_BVS = df_perf_maker_boxplot(table.perf.linear.BVS, list_target_fdr = c(1:p), stats_names = c("BVS (coef)"), n.rep = 100, length_bin = 0.1)
+df_done_boxplot_DLasso_BH = df_perf_maker_boxplot(table.perf.linear.DLasso.BH, list_target_fdr = list_target_fdr, stats_names = c("DLasso+BH"), n.rep = 100, length_bin = 0.1)
+df_done_boxplot_DLasso_pv = df_perf_maker_boxplot(table.perf.linear.DLasso.pv, list_target_fdr = list_target_fdr, stats_names = c("DLasso+pv"), n.rep = 100, length_bin = 0.1)
+df_done_boxplot_KO = df_perf_maker_boxplot(table.perf.linear.KO, list_target_fdr = c(1:101), stats_names = c("KO"), n.rep = 100, length_bin = 0.1)
+
+df_boxplot <- rbind(df_done_boxplot_DLasso_BH, df_done_boxplot_DLasso_pv, df_done_boxplot_KO)
+
+df_aggregated <- summarise(group_by(df_boxplot, FDP_levels, KO), Count = n(), .groups = "drop") # get the count of points
+df_aggregated <- mutate(group_by(df_aggregated, KO), Normalized_Count = Count*100 / sum(Count)) # Normalized count by the length of parameters sequence (list_target_fdr, list_lambda, ...)
+df_means <- summarise(group_by(df_boxplot, FDP_levels, KO), Mean = mean(Power), .groups = "drop") # get the mean power over an FDP interval
+
+# Create boxplots which give point density for each methods
+
+count_plot <- ggplot(df_aggregated, aes(x = FDP_levels, y = Normalized_Count, fill = KO, color = KO)) +
+  geom_bar(stat = "identity", position = position_dodge(0.8), width = 0.6, alpha = 0.8) +
+  ylim(0, 97) +
+  geom_text(aes(label = round(Normalized_Count, 1)), # text/labels adjustments
+            position = position_dodge(0.8), 
+            vjust = -0.5,  
+            size = 5.,     
+            angle = 20,    
+            color = "black",
+            fontface = "bold") +
+  scale_fill_manual(values = c("#9d701b", "#7f7c00", "#17becf", "#a28823", "#993300")) +
+  scale_color_manual(values = c("#9d701b", "#7f7c00", "#17becf", "#a28823", "#993300")) +
+  labs(
+    x = NULL,  # Remove x-axis label to align with median plot
+    y = "Normalized count",
+    fill = "Methods",
+    shape = "Methods",  # Shape legend for median plot
+    color = "Methods"   # Color legend for median plot
+  ) +
+  theme(
+    axis.text.x = element_text(size = 22, face = "bold", angle = 45, hjust = 1),
+    axis.title.x = element_text(size = 24),
+    axis.title.y = element_text(size = 24, vjust = 2),
+    axis.text.y = element_text(size = 22, face = "bold"),
+    legend.position = c(0.88, 0.6),  
+    legend.title = element_blank(),
+    legend.text = element_text(size = 26),
+    legend.justification = c("right", "center"),
+    legend.spacing.x = unit(0.7, "cm"),
+    panel.background = element_rect(fill = "#F6F6F6"),
+    panel.grid.major = element_line(size = 0.5, linetype = 'solid', colour = "white"),
+    panel.grid.minor = element_line(size = 0.25, linetype = 'solid', colour = "white"),
+    plot.title = element_blank()
+  ) + guides(#  legend guide
+    color = guide_legend(ncol = 3),  
+    fill = guide_legend(ncol = 3),   
+    shape = guide_legend(ncol = 3)  
+  ) 
+
+# Mean plot 
+
+mean_comp <- ggplot(df_aggregated, aes(x = FDP_levels, y = Power, size = Count, fill = KO, color = KO, shape = KO)) +
+  geom_point(data = df_means, aes(x = FDP_levels, y = Mean), size = 5, stroke = 1.9, position = position_dodge(width = 0.8)) +
+  scale_color_manual(values = c("#9d701b", "#7f7c00", "#17becf", "#a28823", "#993300")) +
+  scale_fill_manual(values = c("#9d701b", "#7f7c00", "#17becf", "#a28823", "#993300")) +
+  scale_shape_manual(values = c(11, 14, 3, 12)) +  # Shapes for KO methods
+  ylim(-0.1, 1) +
+  labs(
+    x = "FDP",
+    y = "Power (mean)",
+    fill = "Methods",
+    shape = "Methods",  
+    color = "Methods"   
+  ) +
+  theme(
+    axis.text.x = element_text(size = 22, face = "bold", angle = 45, hjust = 1),
+    axis.title.x = element_text(size = 24),
+    axis.title.y = element_text(size = 26),
+    axis.text.y = element_text(size = 22, face = "bold"),
+    legend.position = c(0.45, 0.9),  
+    legend.title = element_blank(),
+    legend.text = element_text(size = 26),
+    legend.justification = c("right", "center"),
+    legend.spacing.x = unit(0.7, "cm"),
+    panel.background = element_rect(fill = "#F6F6F6"),
+    panel.grid.major = element_line(size = 0.5, linetype = 'solid', colour = "white"),
+    panel.grid.minor = element_line(size = 0.25, linetype = 'solid', colour = "white"),
+    plot.title = element_blank()
+  ) + guides(# legend guide
+    color = guide_legend(ncol = 3), 
+    fill = guide_legend(ncol = 3),   
+    shape = guide_legend(ncol = 3)   
+  )
+
+
+# Combine plots
+
+combined_plot <- count_plot / mean_comp +
+  plot_layout(axes = "collect", heights = c(1, 2))  
+
+combined_plot
+
+ggsave(file = "/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/Additional_FS_methods/Figures/FS_DebiasedLasso_comp.png", height = 10, width = 16)
+```
+
+
+# The Interaction case 
+
+
+```{r load data from the interaction case with KOPI}
+load("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/R_files/LPLR_KO_BH_interaction_table_perfx10.R")
+```
+
+```{r}
+table.perf.interaction.DLasso.BH <- data.frame(rep(NA, ncol(X_real)+2))
+
+for (iter in 1:10){
+  pvalues <- pvalues.list[[iter]][-1]
+  beta <- list.beta[[iter]]
+  
+  part.mats <- DebiasedLasso.selection(list_target_fdr, pvalues, beta)
+  
+  table.perf.interaction.DLasso.BH <- cbind(table.perf.interaction.DLasso.BH, part.mats[[1]])
+  }
+
+table.perf.interaction.DLasso.BH <- table.perf.interaction.DLasso.BH[,-1]
+  
+save(table.perf.interaction.DLasso.BH, file = "/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/Additional_FS_methods/R_files/DebiasedLasso_interaction_table_perfx100.R")
+```
+
+
+```{r data analysis}
+load("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/Additional_FS_methods/R_files/DebiasedLasso_interaction_table_perfx100.R")
+table.perf.BH.05 <- table.perf.interaction.DLasso.BH[1:2, grep("BH_0.05_", colnames(table.perf.interaction.DLasso.BH))]
+table.perf.BH.2 <- table.perf.interaction.DLasso.BH[1:2, grep("BH_0.2_", colnames(table.perf.interaction.DLasso.BH))]
+table.perf.BH.5 <- table.perf.interaction.DLasso.BH[1:2, grep("BH_0.5_", colnames(table.perf.interaction.DLasso.BH))]
+
+rowMeans(table.perf.BH.05)
+rowMeans(table.perf.BH.2)
+rowMeans(table.perf.BH.5)
+
+apply(table.perf.BH.05,1,sd)
+apply(table.perf.BH.2,1,sd)
+apply(table.perf.BH.5,1,sd)
+
+
+
+# table.select <- table.perf.interaction.DLasso.BH[3:751, grep("BH_0.2_", colnames(table.perf.interaction.DLasso.BH))]
+# apply(table.select,2, sum)
+# table.perf.BH.2
+# which(table.select[])
+```
+

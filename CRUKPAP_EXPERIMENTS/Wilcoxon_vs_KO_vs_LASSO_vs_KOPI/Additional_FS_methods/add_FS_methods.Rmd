@@ -138,7 +138,7 @@ oracle.power <- c()
 oracle.FDP <- c()
 
 # In this case TD and FD can be directly obtained from the power and the FDP
-
+table.selected.BVS <- data.frame(matrix(ncol = 100*101, nrow = 2))
 for (i in 1:100){
   
 table <- table.perf.linear.BVS.pip[,(749*(i-1)+1):(749*i)]
@@ -159,6 +159,7 @@ mvec.ratio <- TD/mFD
 
 oracle.power <- c(oracle.power, table[2, which.max(mvec.ratio)])
 oracle.FDP <- c(oracle.FDP, table[1, which.max(mvec.ratio)])
+ta
 }
 
 oracle.power.final <- oracle.power
@@ -176,7 +177,68 @@ sd(table.perf.linear.BVS.pip[2, c(seq(10,74900,749)-1)])
 ```
 
 
+```{r BVS BH}
+load("/home/julie/Documents/Paper_codes/CRUKPAP_EXPERIMENTS/Wilcoxon_vs_KO_vs_LASSO_vs_KOPI/Additional_FS_methods/R_files/BVS_linear_table_perfx100.RData")
+
+
+power.05 <- c()
+power.1 <- c()
+power.2 <- c()
+power.5 <- c()
+
+fdp.05 <- c()
+fdp.1 <- c()
+fdp.2 <- c()
+fdp.5 <- c()
+
+BH.select <- function(alpha){
+  power.vec <- c()
+  fdp.vec <- c()
+  for (iter in 1:100){
+    pip.value <- table.BVS.pip[,iter]
+    pip.order <- pip.value[order(pip.value)]
+
+    #pip.transform <- p*(1-pip.order)/1:p
+    pip.transform <- p*(1-pip.order)/seq(p,1)
+    selected.index <- which(pip.transform <= alpha)
+    selected_BH <- order(pip.value)[selected.index]
+    power.vec <- c(power.vec, power(selected_BH, list.beta[[iter]]))
+    fdp.vec <- c(fdp.vec, fdp(selected_BH, list.beta[[iter]]))
+  }
+  return(list(power.vec, fdp.vec))
+}
+
+perf.05 <- BH.select(0.05)
+
+power.05 <- perf.05[[1]]
+fdp.05 <- perf.05[[2]]
+mean(power.05)
+sd(power.05)
+mean(fdp.05)
+sd(fdp.05)
+
+perf.2 <- BH.select(0.2)
+power.2 <- perf.2[[1]]
+fdp.2 <- perf.2[[2]]
+mean(power.2)
+sd(power.2)
+mean(fdp.2)
+sd(fdp.2)
+
+perf.5 <- BH.select(0.5)
+power.5 <- perf.2[[1]]
+fdp.5 <- perf.5[[2]]
+mean(power.5)
+sd(power.5)
+mean(fdp.5)
+sd(fdp.5)
+
+
+```
+
+
 ##############################################################################################################################
+
 
 
 ```{r}

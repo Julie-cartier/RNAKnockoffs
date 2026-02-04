@@ -1,6 +1,6 @@
 rm(list = ls())
 
-
+set.seed(123)
 # loading libraries
 
 library(stringr)
@@ -28,5 +28,4 @@ n <- nrow(X_real) # Number of samples
 p <- ncol(X_real) # Number of variables
 
 list_target_FDP_fdr = seq(0,1,0.01) 
-
 
